@@ -167,7 +167,14 @@ def render_report(
             _add_bullet(doc, rock)
         doc.add_paragraph()
 
-    # ── 5. Strengths ─────────────────────────────────────────────────────────
+    # ── 5. Performance Analytics ──────────────────────────────────────────────
+    analytics = narrative.get("analytics_section", "")
+    if analytics:
+        _add_section_heading(doc, "Performance Analytics", deep_teal)
+        _add_body(doc, analytics)
+        doc.add_paragraph()
+
+    # ── 6. Strengths ─────────────────────────────────────────────────────────
     strengths = narrative.get("strengths", [])
     if strengths:
         _add_section_heading(doc, "What you did well", deep_teal)
@@ -510,6 +517,68 @@ def _add_coaching_moments_table(doc, moments, cyan_hex):
                 r.font.size = Pt(10)
 
 
+def _add_question_handling_table(doc, pairs, weakest_exchange, cyan_hex):
+    """Structured Q&A table from coaching narrative pairs data.
+
+    Verdict column styling: Answered = normal; Partial = italic;
+    Deflected / Dodged = bold. If pairs is empty the call is a no-op.
+    """
+    if not pairs:
+        return
+    table = doc.add_table(rows=1, cols=4)
+    table.style = "Table Grid"
+
+    hdr = table.rows[0].cells
+    for i, label in enumerate(
+        ["Question", "Verdict", "Answer length", "Time to substance"]
+    ):
+        hdr[i].text = label
+        for p in hdr[i].paragraphs:
+            for r in p.runs:
+                r.font.bold = True
+                r.font.name = "Arial"
+                r.font.color.rgb = RGBColor(255, 255, 255)
+            p.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+        _shade_cell(hdr[i], cyan_hex)
+
+    for pair in pairs:
+        verdict = (pair.get("verdict") or "").lower()
+        cells = table.add_row().cells
+
+        cells[0].text = pair.get("question", "")
+        for p in cells[0].paragraphs:
+            for r in p.runs:
+                r.font.name = "Arial"
+                r.font.size = Pt(10)
+
+        vp = cells[1].paragraphs[0]
+        vr = vp.add_run(verdict.title() if verdict else "—")
+        vr.font.name = "Arial"
+        vr.font.size = Pt(10)
+        if verdict in ("deflected", "dodged"):
+            vr.font.bold = True
+        elif verdict == "partial":
+            vr.font.italic = True
+
+        cells[2].text = str(pair.get("answer_length", "—"))
+        cells[3].text = str(pair.get("time_to_substance", "—"))
+        for cell in cells[1:]:
+            for p in cell.paragraphs:
+                for r in p.runs:
+                    if not r.font.name:
+                        r.font.name = "Arial"
+                    if not r.font.size:
+                        r.font.size = Pt(10)
+
+    if weakest_exchange:
+        weak_para = doc.add_paragraph()
+        weak_para.paragraph_format.space_before = Pt(6)
+        wr = weak_para.add_run(f"Weakest exchange: {weakest_exchange}")
+        wr.font.name = "Arial"
+        wr.font.size = Pt(10)
+        wr.font.italic = True
+
+
 def _add_conciseness_example(doc, original, suggested):
     # Render one before/after pair inside a lightly shaded single-cell table.
     if not original and not suggested:
@@ -669,6 +738,7 @@ def render_client_report(
     context: dict,  # candidate, session, date
     config: dict,
     out_path: str,
+    coaching_narrative: dict | None = None,
 ) -> None:
     """Render the 7-section client report Word document.
 
@@ -676,6 +746,10 @@ def render_client_report(
     no metrics tables, no pillar scorecards. The quality of the output is
     determined by the client_report.md prompt and the trainer feedback
     transcript, not by the renderer.
+
+    coaching_narrative is the NARRATIVE_SCHEMA dict from the first AI pass.
+    When present, its question_handling.pairs are rendered as a structured
+    table after the Performance Profile section.
     """
     doc = Document()
 
@@ -685,6 +759,7 @@ def render_client_report(
 
     brand = config["brand"]
     deep_teal = brand["deep_teal"]
+    cyan = brand["cyan"]
 
     # ── Page setup (A4) ───────────────────────────────────────────────────────
     from docx.shared import Mm
@@ -762,6 +837,19 @@ def render_client_report(
                     ex.get("tighter", ""),
                 )
         doc.add_paragraph()
+
+    # ── Question handling table (from coaching narrative) ─────────────────────
+    # Rendered from the structured pairs data produced by the first AI pass,
+    # so the table figures always match the coach dashboard exactly.
+    if coaching_narrative:
+        qa = coaching_narrative.get("question_handling") or {}
+        if isinstance(qa, dict):
+            pairs = qa.get("pairs") or []
+            weakest = qa.get("weakest_exchange", "")
+            if pairs:
+                _add_subsection_heading(doc, "Question Handling — detail", deep_teal)
+                _add_question_handling_table(doc, pairs, weakest, cyan)
+                doc.add_paragraph()
 
     # ── Section 4: Standout Strengths ────────────────────────────────────────
     _add_section_heading(doc, "Standout Strengths", deep_teal)

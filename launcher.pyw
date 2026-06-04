@@ -318,6 +318,10 @@ class DeliveryLabApp(tk.Tk):
         """
         from src.pipeline import run_session
 
+        # TODO: wire in GUI fields for role, organisation, sector,
+        # session_number, interview_format, rock_1, rock_2, rock_3,
+        # known_context, confidentiality and pass them here.
+        # All default to empty string / 1 / "broadcast" until then.
         result = run_session(
             audio_path=p["audio_file"],
             candidate=p["candidate"],

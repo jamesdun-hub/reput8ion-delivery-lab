@@ -49,6 +49,7 @@ NARRATIVE_SCHEMA: dict[str, Any] = {
         "pace_and_tone_narrative",
         "filler_and_weak_words_narrative",
         "control_and_structure_narrative",
+        "analytics_section",
         "tips_for_success",
         "final_word",
     ],
@@ -337,6 +338,23 @@ NARRATIVE_SCHEMA: dict[str, Any] = {
                 "Ends on practice — skills decay without use."
             ),
         },
+        "analytics_section": {
+            "type": "string",
+            "description": (
+                "The full Performance Analytics section as flowing prose. "
+                "Cover all ten metrics in this exact order: speaking pace, pauses, "
+                "filler words, sentence openers, vocal variety, weak words, "
+                "sentence structure, vocal energy, repetition, narrative control signals. "
+                "For each metric: state the participant's actual score from the metrics "
+                "data, explain in plain English what it means, give the target range, "
+                "state the status as one of Strong / Watch / Develop, and give one "
+                "specific actionable tip grounded in the Reput8ion methodology. "
+                "End the section with a summary scorecard table in markdown format "
+                "listing all ten metrics with score, target and status. "
+                "UK spelling throughout. No bullet lists. No fabricated figures. "
+                "Every number must come from the metrics data provided."
+            ),
+        },
     },
 }
 
@@ -524,6 +542,24 @@ class CoachContext:
     candidate_name: str
     session_label: str
     session_date: str  # e.g. "1 June 2026"
+    role: str = ""
+    organisation: str = ""
+    sector: str = ""
+    session_number: int = 1
+    interview_format: str = "broadcast"  # broadcast / press / panel / hostile
+    rock_1: str = ""
+    rock_2: str = ""
+    rock_3: str = ""
+    known_context: str = ""
+    confidentiality: str = "participant only"
+
+
+_PACE_BENCHMARKS: dict[str, str] = {
+    "broadcast": "140–170 wpm",
+    "press": "150–180 wpm",
+    "panel": "130–160 wpm",
+    "hostile": "130–155 wpm",
+}
 
 
 def _build_user_message(
@@ -536,6 +572,25 @@ def _build_user_message(
 ) -> str:
     """Structured payload for the model. Includes transcript text (with
     time markers every 30s) so the AI can cite specific moments."""
+    gross = (metrics or {}).get("pace", {}).get("gross_wpm", "?")
+    net = (metrics or {}).get("pace", {}).get("net_wpm", "?")
+    print(f"[coach] pace injected into prompt: gross={gross} net={net}")
+    pace_benchmark = _PACE_BENCHMARKS.get(context.interview_format, "140–170 wpm")
+    session_brief = (
+        "SESSION BRIEF\n"
+        f"Participant: {context.candidate_name}\n"
+        f"Role: {context.role}\n"
+        f"Organisation: {context.organisation}\n"
+        f"Sector: {context.sector}\n"
+        f"Session number: {context.session_number}\n"
+        f"Interview format: {context.interview_format}\n"
+        f"Pace benchmark: {pace_benchmark}\n"
+        f"Rock 1: {context.rock_1}\n"
+        f"Rock 2: {context.rock_2}\n"
+        f"Rock 3: {context.rock_3}\n"
+        f"Known context: {context.known_context}\n"
+        f"Confidentiality: {context.confidentiality}\n"
+    )
     payload = {
         "participant": {
             "first_name": context.candidate_name.split()[0],
@@ -547,7 +602,9 @@ def _build_user_message(
         "prior_metrics": prior_metrics,
     }
     msg = (
-        "Here is the measured session data and the timestamped transcript. "
+        session_brief
+        + "\n"
+        + "Here is the measured session data and the timestamped transcript. "
         "Use the metrics object as the single source of every number you cite. "
         "Use the transcript to identify specific moments, timestamps and quotes "
         "for tone_assessment, coaching_moments, conciseness_analysis and "
@@ -719,6 +776,84 @@ def _offline_placeholder(metrics: dict, context: CoachContext) -> dict:
 
 # ---------- Client report generation ----------
 
+def _build_dashboard_verdicts_block(coaching_narrative: dict, metrics: dict) -> str:
+    """Render the coaching narrative's key verdicts as readable plain text.
+
+    Placed at the top of the client report user message so the second-pass
+    AI cannot ignore or contradict the coaching assessment. Every verdict
+    here comes from the same call that powered the coach dashboard, so
+    report and dashboard are always consistent.
+    """
+    lines = [
+        "## DASHBOARD VERDICTS (use these to anchor the report's assessments)",
+        "",
+    ]
+
+    # Pillar verdicts
+    verdicts = coaching_narrative.get("pillar_verdicts") or {}
+    if verdicts:
+        lines.append("Pillar verdicts:")
+        for pillar in ("delivery", "story", "control"):
+            v = verdicts.get(pillar) or {}
+            status = v.get("status", "?")
+            verdict = v.get("verdict", "")
+            lines.append(f"  {pillar.capitalize()}: {status} — {verdict}")
+
+    # Rock strength
+    rocks = coaching_narrative.get("inferred_rocks") or []
+    rock_strengths = coaching_narrative.get("rock_strength") or []
+    delta = coaching_narrative.get("rock_delta_note", "")
+    if rocks or rock_strengths:
+        lines.append("")
+        lines.append("Rock strength:")
+        for i, rock in enumerate(rocks):
+            meta = rock_strengths[i] if i < len(rock_strengths) else {}
+            s = meta.get("strength", "unknown")
+            n = meta.get("note", "")
+            rock_short = rock[:70] + ("…" if len(rock) > 70 else "")
+            lines.append(f'  Rock {i + 1} ("{rock_short}"): {s} — {n}')
+    if delta:
+        lines.append(f"  Rock delta: {delta}")
+
+    # Control signals (from metrics — authoritative count)
+    cs = metrics.get("control_signals") or {}
+    openers = metrics.get("sentence_openers") or {}
+    if cs:
+        b = cs.get("bridge_count", 0)
+        f_ = cs.get("flag_count", 0)
+        h = cs.get("hook_count", 0)
+        lines.append("")
+        lines.append(f"Control signals: {b} bridges / {f_} flags / {h} hooks")
+    if openers:
+        crutch_pct = openers.get("crutch_percentage", 0)
+        top_o = next(iter(openers.get("by_opener") or {}), "none")
+        lines.append(f'Sentence openers: {crutch_pct}% crutch — top: "{top_o}"')
+
+    # Answer lengths and weakest exchange
+    qa = coaching_narrative.get("question_handling") or {}
+    if isinstance(qa, dict):
+        pairs = qa.get("pairs") or []
+        weakest = qa.get("weakest_exchange", "")
+        if pairs:
+            lengths = " / ".join(p.get("answer_length", "?") for p in pairs)
+            lines.append(f"Answer lengths: {lengths}")
+        if weakest:
+            lines.append(f"Weakest exchange: {weakest}")
+
+    # Watch coaching moments only
+    moments = coaching_narrative.get("coaching_moments") or []
+    watch_moments = [m for m in moments if m.get("type") == "watch"]
+    if watch_moments:
+        lines.append("")
+        lines.append("Coaching moments to raise:")
+        for m in watch_moments:
+            ts = m.get("timestamp_approx", "?")
+            obs = m.get("observation", "")
+            lines.append(f"  [{ts}]: {obs}")
+
+    return "\n".join(lines) + "\n"
+
+
 def _load_client_report_prompt() -> str:
     """Load the client report system prompt from prompts/client_report.md."""
     if not _CLIENT_REPORT_PROMPT_FILE.exists():
@@ -740,6 +875,8 @@ def _build_client_report_user_message(
 
     The trainer feedback transcript is the primary input and is placed
     prominently. The coaching narrative and metrics are supporting context.
+    A DASHBOARD VERDICTS block is prepended after the JSON so the model
+    sees the key verdicts as explicit plain text — not buried in the JSON.
     """
     payload = {
         "participant": {
@@ -752,12 +889,16 @@ def _build_client_report_user_message(
         "supporting_narrative": coaching_narrative,
     }
 
+    verdicts_block = _build_dashboard_verdicts_block(coaching_narrative, metrics)
+
     msg = (
         "The following inputs are provided to produce the client report. "
         "The trainer feedback transcript is the PRIMARY input — read it "
         "first and extract the trainer's feedback framework before writing "
         "anything. Call the submit_client_report tool.\n\n"
         f"```json\n{json.dumps(payload, indent=2)}\n```"
+        "\n\n"
+        + verdicts_block
     )
 
     if coach_notes_text:

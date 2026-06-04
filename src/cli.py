@@ -50,6 +50,33 @@ def main() -> None:
         action="store_true",
         help="Use local transcription instead of AssemblyAI (not yet implemented)",
     )
+    parser.add_argument("--role", default="", help="Participant's job title")
+    parser.add_argument(
+        "--organisation", default="", help="Organisation name and one-line descriptor"
+    )
+    parser.add_argument(
+        "--sector", default="", help="Sector (e.g. public sector, financial services)"
+    )
+    parser.add_argument(
+        "--session-number", type=int, default=1,
+        help="Session number (1, 2, 3+)",
+    )
+    parser.add_argument(
+        "--interview-format", default="broadcast",
+        choices=["broadcast", "press", "panel", "hostile"],
+        help="Interview format simulated",
+    )
+    parser.add_argument("--rock1", default="", help="Key message Rock 1")
+    parser.add_argument("--rock2", default="", help="Key message Rock 2")
+    parser.add_argument("--rock3", default="", help="Key message Rock 3")
+    parser.add_argument(
+        "--context", default="",
+        help="Known context (e.g. high-stakes appearance, prior media experience)",
+    )
+    parser.add_argument(
+        "--confidentiality", default="participant only",
+        help="Who receives this report (e.g. 'participant only')",
+    )
 
     args = parser.parse_args()
     load_dotenv()
@@ -75,6 +102,16 @@ def main() -> None:
         prior_metrics=prior_metrics,
         auto_open_dashboard=True,
         metrics_callback=_print_summary,
+        role=args.role,
+        organisation=args.organisation,
+        sector=args.sector,
+        session_number=args.session_number,
+        interview_format=args.interview_format,
+        rock_1=args.rock1,
+        rock_2=args.rock2,
+        rock_3=args.rock3,
+        known_context=args.context,
+        confidentiality=args.confidentiality,
     )
 
 

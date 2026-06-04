@@ -43,6 +43,16 @@ def run_session(
     log=print,
     auto_open_dashboard: bool = True,
     metrics_callback=None,
+    role: str = "",
+    organisation: str = "",
+    sector: str = "",
+    session_number: int = 1,
+    interview_format: str = "broadcast",
+    rock_1: str = "",
+    rock_2: str = "",
+    rock_3: str = "",
+    known_context: str = "",
+    confidentiality: str = "participant only",
 ) -> RunResult:
     """Run the full analysis pipeline and return a RunResult.
 
@@ -191,6 +201,16 @@ def run_session(
         candidate_name=candidate,
         session_label=session_label,
         session_date=date,
+        role=role,
+        organisation=organisation,
+        sector=sector,
+        session_number=session_number,
+        interview_format=interview_format,
+        rock_1=rock_1,
+        rock_2=rock_2,
+        rock_3=rock_3,
+        known_context=known_context,
+        confidentiality=confidentiality,
     )
     timestamped_transcript = _build_timestamped_transcript(analysis_transcript.words)
 
@@ -303,6 +323,7 @@ def run_session(
             render_client_report(
                 client_narrative=client_narrative,
                 context=ctx, config=config, out_path=str(report_path),
+                coaching_narrative=narrative,
             )
         except PermissionError:
             ts = datetime.now().strftime("%H%M%S")
@@ -311,6 +332,7 @@ def run_session(
             render_client_report(
                 client_narrative=client_narrative,
                 context=ctx, config=config, out_path=str(report_path),
+                coaching_narrative=narrative,
             )
         log(f"   Saved: {report_path}")
 
