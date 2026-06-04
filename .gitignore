@@ -1,0 +1,43 @@
+.env
+Files.env
+*.env
+.claude/settings.local.json
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Session artefacts — confidential data and large files
+samples/*.mp3
+samples/*.wav
+samples/*.m4a
+samples/*.json
+output/
+*.docx
+!samples/.gitkeep
+
+# Session audio and cached transcripts
+Sessions/*.mp3
+Sessions/*.mp4
+Sessions/*.wav
+Sessions/*.m4a
+Sessions/*.aac
+Sessions/*.mov
+Sessions/*.mkv
+Sessions/*.webm
+Sessions/*.assemblyai.json
+Sessions/*.extracted.wav
+
+# Handover / scratch
+_handover/
+.refit-backup/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

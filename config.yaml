@@ -1,0 +1,192 @@
+# Reput8ion Delivery Lab — tunable thresholds and word lists.
+# All target bands here are placeholders pending James's validation
+# against real recordings. Nothing in src/ should hard-code these values.
+
+pace:
+  # Words per minute over real speaking time (not wall clock).
+  ideal_min: 140
+  ideal_max: 170
+  fast_warning: 170   # above this: edge-of-fast
+  fast_hard: 185      # above this: hard-fast
+  slow_warning: 120   # below this: too slow
+  # Window size in seconds for the per-window pace breakdown.
+  window_seconds: 30
+  # Windows below this wpm are excluded from the pace chart (pauses / cross-talk).
+  chart_min_wpm: 100
+
+filler_words:
+  tokens:
+    - um
+    - uh
+    - er
+    - erm
+    - ah
+    - hmm
+    - eh
+  green_per_100_words: 4.0
+  watch_per_100_words: 6.0
+
+weak_words:
+  # Single tokens.
+  single:
+    - just
+    - really
+    - very
+    - quite
+    - actually
+    - basically
+    - literally
+    - maybe
+    - probably
+    - stuff
+    - things
+    - like
+  # Multi-word hedges, matched as phrases on the normalised transcript.
+  phrases:
+    - sort of
+    - kind of
+    - i think
+    - i guess
+    - i suppose
+  watch_per_100_words: 4.0
+  target_pct: 4.0          # shown on dashboard: target is below this %
+
+sentence_openers:
+  crutches:
+    single:
+      - so
+      - well
+      - and
+      - but
+      - yeah
+      - okay
+    phrases:
+      - i mean
+      - you know
+  watch_percentage: 20
+
+sentence_length:
+  # Average words per sentence above which to flag.
+  watch_avg_words: 24
+
+prosody:
+  # Minimum silence length to count as a pause (seconds).
+  pause_min_duration_seconds: 0.5
+  # Pitch variation below which a passage reads as monotone.
+  # Measured in semitones (log-pitch standard deviation). Tune against samples.
+  monotone_pitch_std_semitones_threshold: 2.0
+  # A flat passage must be at least this long to count.
+  monotone_passage_min_duration_seconds: 8.0
+  # Sentence-end energy drop (dB) classed as trailing off.
+  trailing_off_db_drop: 9.0
+
+control:
+  # Phrases that indicate the candidate is bridging (pivoting back to their message).
+  # Add or remove phrases here — no code changes needed.
+  bridge_phrases:
+    - "what i can say is"
+    - "more importantly"
+    - "let me put that in context"
+    - "the key issue here is"
+    - "the key point here is"
+    - "what i'd say is"
+    - "to put that another way"
+    - "what that means is"
+    - "what's important here"
+    - "the important thing to note"
+    - "what i'd want to emphasise"
+    - "coming back to"
+    - "the reality is"
+    - "the fact of the matter is"
+    - "what i think is important"
+    - "to bring it back to"
+
+  # Phrases that indicate flagging (signalling a key point is coming).
+  flag_phrases:
+    - "the most important thing"
+    - "what i'd highlight"
+    - "crucially"
+    - "the key message"
+    - "what i want to emphasise"
+    - "what's crucial"
+    - "the three things"
+    - "three key points"
+    - "firstly"
+    - "first and foremost"
+    - "what stands out"
+    - "i want to be clear"
+    - "let me be clear"
+
+  # Phrases that indicate hooking (drawing the audience in).
+  hook_phrases:
+    - "imagine"
+    - "picture this"
+    - "think about"
+    - "here's the thing"
+    - "let me give you an example"
+    - "for example"
+    - "for instance"
+    - "what's interesting is"
+    - "here's what happened"
+    - "a good example of this"
+
+  # Repetition detection — phrases repeated this many times or more are flagged.
+  repetition:
+    min_phrase_words: 3       # shortest phrase length to track
+    flag_at_count: 3          # flag if a phrase appears this many times or more
+    target_pct: 3.0           # shown on dashboard: target is below this % of total words
+
+story:
+  # Sentence openings that suggest a buried lead (hedged, not headline-first).
+  hedged_openers:
+    - "i think"
+    - "i suppose"
+    - "it's a bit"
+    - "kind of"
+    - "i guess"
+    - "sort of"
+    - "maybe"
+    - "probably"
+    - "i'm not sure"
+    - "i don't know"
+    - "it's hard to say"
+    - "i'd like to think"
+
+  # Sentence openings that suggest a strong headline-first answer.
+  declarative_openers:
+    - "the fact is"
+    - "the reality is"
+    - "our position is"
+    - "what we're doing"
+    - "the key message"
+    - "the bottom line"
+    - "let me be clear"
+    - "to be direct"
+    - "the most important thing"
+    - "what i'd say is"
+
+conciseness:
+  # Excess words target shown on dashboard.
+  target_excess_pct: 30.0
+
+coach:
+  # OpenAI model used to generate the narrative sections of the report.
+  model: gpt-4o
+  max_tokens: 4000
+  temperature: 0.4
+  # Path to the system prompt file, relative to the project root.
+  # Edit prompts/coach.md to change the framework, style, or assessment criteria.
+  prompt_file: prompts/coach.md
+
+brand:
+  name: Reput8ion Dynamics
+  product: Delivery Lab
+  cyan: "0CC0DF"        # accent / table headers
+  deep_teal: "0A5C6B"   # body headings
+  font: Arial
+  page_size: A4
+  header_text: "Reput8ion Dynamics | Media Training"
+  footer_text: "Confidential coaching feedback"
+  signoff: "Prepared by James Dunny, Reput8ion Dynamics"
+  title: "Delivery Feedback Report"
+  subtitle: "Telling your story — delivering with confidence"
