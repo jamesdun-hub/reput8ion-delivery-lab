@@ -181,10 +181,10 @@ def _prose_block(text: str) -> str:
     # Split on double newlines; fall back to single block
     parts = [p.strip() for p in re.split(r"\n{2,}", text.strip()) if p.strip()]
     if not parts:
-        return f'<p class="prose">{_e(text)}</p>'
+        return f'<p class="prose" contenteditable="true">{_e(text)}</p>'
     def _cap(p: str) -> str:
         return p[0].upper() + p[1:] if p and p[0].islower() else p
-    return "".join(f'<p class="prose">{_e(_cap(p))}</p>' for p in parts)
+    return "".join(f'<p class="prose" contenteditable="true">{_e(_cap(p))}</p>' for p in parts)
 
 
 def _verbatim_box(original: str, tighter: str) -> str:
@@ -423,7 +423,7 @@ def _pillar_assessment(verdicts: dict) -> str:
             f'<div class="pillar-col">'
             f'<div class="pillar-hdr"><span class="pillar-name">{_e(name)}</span>'
             f'<span class="pill {pc}">{bl}</span></div>'
-            f'<p class="pillar-verdict">{_e(verdict)}</p>'
+            f'<p class="pillar-verdict" contenteditable="true">{_e(verdict)}</p>'
             f'</div>'
         )
     return f'<div class="pillar-grid">{cols}</div>'
@@ -443,7 +443,7 @@ def _rocks_html(rocks: list, rock_strengths: list, delta: str, first_name: str) 
         bclass   = "rock-strong" if strength == "strong" else "rock-weak"
         items += (
             f'<div class="rock-card">'
-            f'<p class="rock-text">{_e(rock)}</p>'
+            f'<p class="rock-text" contenteditable="true">{_e(rock)}</p>'
             f'<p class="rock-meta"><span class="{bclass}">{badge}</span>'
             + (f'<span class="rock-note"> — {_e(note)}</span>' if note else "")
             + f'</p></div>'
@@ -567,8 +567,8 @@ def _tips_html(tips: list) -> str:
     items = ""
     for t in sorted(tips, key=lambda x: x.get("rank", 99)):
         items += (
-            f'<li class="tip-item"><strong>{_e(t.get("tip",""))}</strong>'
-            + (f'<span class="tip-rat">{_e(t.get("rationale",""))}</span>' if t.get("rationale") else "")
+            f'<li class="tip-item"><strong contenteditable="true">{_e(t.get("tip",""))}</strong>'
+            + (f'<span class="tip-rat" contenteditable="true">{_e(t.get("rationale",""))}</span>' if t.get("rationale") else "")
             + '</li>'
         )
     return (
@@ -703,6 +703,53 @@ header .sub{opacity:.7;margin-top:5px;font-size:.88rem}
 .closing-text{font-size:.97rem;color:#374151;line-height:1.7}
 
 footer{text-align:center;padding:18px;color:#94a3b8;font-size:.72rem}
+
+/* ── TOC sidebar ── */
+.toc{position:fixed;left:0;top:0;width:190px;height:100vh;background:#fff;
+  border-right:1px solid #e2e8f0;overflow-y:auto;padding:18px 10px 24px;
+  z-index:200;box-shadow:2px 0 10px rgba(0,0,0,.07)}
+.toc-brand{font-size:.62rem;font-weight:800;text-transform:uppercase;
+  letter-spacing:.13em;color:#0A5C6B;padding:0 6px 12px;
+  border-bottom:2px solid #0CC0DF;margin-bottom:14px;display:block}
+.toc-link{display:block;font-size:.74rem;color:#64748b;padding:5px 8px;
+  border-radius:5px;text-decoration:none;line-height:1.35;margin-bottom:2px;
+  transition:background .12s,color .12s}
+.toc-link:hover{background:#f0f9ff;color:#0A5C6B}
+.toc-link.active{background:#e0f7fa;color:#0A5C6B;font-weight:700}
+.toc-print{display:block;width:100%;margin-top:20px;padding:9px 0;
+  background:#0CC0DF;color:#fff;font-size:.7rem;font-weight:700;
+  text-transform:uppercase;letter-spacing:.06em;border:none;border-radius:6px;
+  cursor:pointer}
+.toc-print:hover{background:#0A5C6B}
+.toc-divider{border:none;border-top:1px solid #e2e8f0;margin:10px 0}
+.edit-badge{display:block;margin-top:12px;padding:6px 8px;background:#fef3c7;
+  border-radius:5px;font-size:.67rem;color:#92400e;line-height:1.4;
+  text-align:center}
+
+/* Shift main content right when sidebar visible */
+@media(min-width:1101px){
+  body{padding-left:190px}
+  header{padding-left:222px}
+  footer{padding-left:190px}
+}
+@media(max-width:1100px){.toc{display:none}}
+
+/* Editable region styles */
+[contenteditable]:hover{outline:2px dashed rgba(12,192,223,0.45);
+  border-radius:3px;cursor:text}
+[contenteditable]:focus{outline:2px solid #0CC0DF;border-radius:3px;
+  background:#f8fdff;box-shadow:0 0 0 4px rgba(12,192,223,0.12)}
+
+/* Print */
+@media print{
+  .toc{display:none!important}
+  body{padding-left:0!important}
+  header{padding-left:32px!important}
+  footer{padding-left:0!important}
+  [contenteditable]{outline:none!important;background:transparent!important;
+    box-shadow:none!important}
+  .edit-badge{display:none!important}
+}
 """
 
 
@@ -938,13 +985,34 @@ def render_report_html(
         if closing_clean:
             sections.append(_section(
                 "Closing assessment",
-                f'<p class="closing-text">{_e(closing_clean)}</p>',
+                f'<p class="closing-text" contenteditable="true">{_e(closing_clean)}</p>',
                 "closing",
             ))
 
     # ── Assemble page ─────────────────────────────────────────────────────────
     body = "\n".join(sections)
     org_str = f' · {_e(org)}' if org else ""
+
+    toc_items = [
+        ("scorecard", "Delivery at a glance"),
+        ("pace",      "Pace across the session"),
+        ("pillars",   "Session assessment"),
+        ("rocks",     "Key messages"),
+        ("presence",  "Presence and authority"),
+        ("qa",        "Question by question"),
+        ("language",  "Language and register"),
+        ("composure", "Composure"),
+        ("scl",       "Story, control, language"),
+        ("strengths", "Standout strengths"),
+        ("devarea",   "Development areas"),
+        ("practice",  "Practice framework"),
+        ("tips",      "Before next session"),
+        ("closing",   "Closing assessment"),
+    ]
+    toc_links = "".join(
+        f'<a class="toc-link" href="#{sid}" data-target="{sid}">{_e(label)}</a>'
+        for sid, label in toc_items
+    )
 
     page = f"""<!DOCTYPE html>
 <html lang="en">
@@ -956,6 +1024,15 @@ def render_report_html(
   <style>{CSS}</style>
 </head>
 <body>
+
+<nav class="toc">
+  <span class="toc-brand">Reput8ion<br>Dynamics</span>
+  {toc_links}
+  <hr class="toc-divider">
+  <button class="toc-print" onclick="window.print()">Print / Save PDF</button>
+  <span class="edit-badge">Click any text<br>to edit it</span>
+</nav>
+
 <header>
   <h1>{_e(candidate)} — Delivery Feedback Report</h1>
   <p class="sub">{_e(session)}{org_str} &nbsp;·&nbsp; {_e(date)} &nbsp;·&nbsp; Reput8ion Dynamics</p>
@@ -964,6 +1041,29 @@ def render_report_html(
 {body}
 </div>
 <footer>Prepared by James Dunny, Reput8ion Dynamics &nbsp;·&nbsp; {_e(date)}</footer>
+
+<script>
+// Hide TOC links for sections not rendered
+document.querySelectorAll('.toc-link').forEach(function(link) {{
+  var id = link.getAttribute('data-target');
+  if (!document.getElementById(id)) link.style.display = 'none';
+}});
+
+// Highlight active section while scrolling
+var tocLinks = document.querySelectorAll('.toc-link');
+var sections = Array.from(document.querySelectorAll('section[id]'));
+var observer = new IntersectionObserver(function(entries) {{
+  entries.forEach(function(entry) {{
+    if (entry.isIntersecting) {{
+      tocLinks.forEach(function(l) {{ l.classList.remove('active'); }});
+      var active = document.querySelector('.toc-link[data-target="' + entry.target.id + '"]');
+      if (active) active.classList.add('active');
+    }}
+  }});
+}}, {{rootMargin: '0px 0px -60% 0px', threshold: 0}});
+sections.forEach(function(s) {{ observer.observe(s); }});
+</script>
+
 </body>
 </html>"""
 
