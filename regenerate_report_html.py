@@ -1015,7 +1015,7 @@ def render_report_html(
     )
 
     page = f"""<!DOCTYPE html>
-<html lang="en">
+<html lang="en-GB">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
@@ -1043,13 +1043,30 @@ def render_report_html(
 <footer>Prepared by James Dunny, Reput8ion Dynamics &nbsp;·&nbsp; {_e(date)}</footer>
 
 <script>
-// Hide TOC links for sections not rendered
+// ── Make all text editable ────────────────────────────────────────────────────
+// Skip classes that are data badges/labels, not prose
+var SKIP_CLASSES = ['badge','pill','sig-chip','qa-v','rock-strong','rock-weak',
+                    'toc-link','toc-brand','toc-print','edit-badge','leg',
+                    'verb-label','tgt','dev-num'];
+// Skip block/structural tags
+var SKIP_TAGS = ['DIV','SECTION','UL','OL','TABLE','TBODY','THEAD','TR',
+                 'CANVAS','SCRIPT','STYLE','NAV','HEADER','FOOTER'];
+
+document.querySelectorAll('.container *, header h1, header .sub').forEach(function(el) {{
+  if (SKIP_TAGS.includes(el.tagName)) return;
+  if (SKIP_CLASSES.some(function(c) {{ return el.classList.contains(c); }})) return;
+  if (el.querySelector('canvas')) return;
+  el.contentEditable = 'true';
+  el.spellcheck = true;
+}});
+
+// ── TOC: hide links for absent sections ──────────────────────────────────────
 document.querySelectorAll('.toc-link').forEach(function(link) {{
   var id = link.getAttribute('data-target');
   if (!document.getElementById(id)) link.style.display = 'none';
 }});
 
-// Highlight active section while scrolling
+// ── TOC: highlight active section on scroll ───────────────────────────────────
 var tocLinks = document.querySelectorAll('.toc-link');
 var sections = Array.from(document.querySelectorAll('section[id]'));
 var observer = new IntersectionObserver(function(entries) {{
