@@ -305,7 +305,12 @@ def run_session(
     # Two API calls for client mode: coaching narrative (already done, saves
     # narrative.json) + client report narrative (new call, produces the prose
     # that feeds the Word doc).
-    ctx = {"candidate": candidate, "session": session_label, "date": date}
+    ctx = {
+        "candidate":    candidate,
+        "session":      session_label,
+        "date":         date,
+        "organisation": getattr(coach_context, "organisation", ""),
+    }
     report_path: Path | None = None
     if mode == "client":
         from src.coach import generate_client_report_narrative
@@ -352,6 +357,36 @@ def run_session(
                 coaching_narrative=narrative,
             )
         log(f"   Saved: {report_path}")
+
+        # ── HTML participant report ────────────────────────────────────────────
+        log("\n[REPORT] Generating HTML participant report...")
+        try:
+            from regenerate_report_html import render_report_html, _compute_filler_windows
+            import webbrowser as _wb
+
+            filler_set = {
+                t.lower() for t in config.get("filler_words", {}).get("tokens", [])
+            }
+            pace_wins  = metrics.get("pace", {}).get("windows") or []
+            word_dicts = [
+                {"text": w.text, "start": w.start, "end": w.end}
+                for w in analysis_transcript.words
+            ]
+            filler_wins = _compute_filler_windows(word_dicts, pace_wins, filler_set)
+            html_path = output_dir / "report.html"
+            render_report_html(
+                metrics=metrics,
+                narrative=narrative,
+                client_report=client_narrative,
+                context=ctx,
+                out_path=str(html_path),
+                filler_windows=filler_wins,
+            )
+            log(f"   Saved: {html_path}")
+            _wb.open(html_path.resolve().as_uri())
+            log("   Opened in browser.")
+        except Exception as _exc:
+            log(f"   [WARN] HTML report skipped: {_exc}")
 
     # ── 9. Coach dashboard (HTML) — coaching mode only ────────────────────────
     # The client never sees the dashboard. It is James's working instrument:
