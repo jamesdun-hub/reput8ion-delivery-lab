@@ -314,7 +314,6 @@ def run_session(
     report_path: Path | None = None
     if mode == "client":
         from src.coach import generate_client_report_narrative
-        from src.report import render_client_report
 
         # Full two-speaker interview transcript for the AI (both voices, labelled)
         full_interview_text = _build_full_interview_transcript(
@@ -338,25 +337,6 @@ def run_session(
         # Save client narrative alongside the coaching narrative
         with open(output_dir / "client_report.json", "w") as f:
             json.dump(client_narrative, f, indent=2)
-
-        log("\n[REPORT] Rendering client report (.docx)...")
-        report_path = output_dir / "report.docx"
-        try:
-            render_client_report(
-                client_narrative=client_narrative,
-                context=ctx, config=config, out_path=str(report_path),
-                coaching_narrative=narrative,
-            )
-        except PermissionError:
-            ts = datetime.now().strftime("%H%M%S")
-            report_path = output_dir / f"report-{ts}.docx"
-            log(f"   report.docx is open in Word — saving as {report_path.name}")
-            render_client_report(
-                client_narrative=client_narrative,
-                context=ctx, config=config, out_path=str(report_path),
-                coaching_narrative=narrative,
-            )
-        log(f"   Saved: {report_path}")
 
         # ── HTML participant report ────────────────────────────────────────────
         log("\n[REPORT] Generating HTML participant report...")
@@ -382,11 +362,12 @@ def run_session(
                 out_path=str(html_path),
                 filler_windows=filler_wins,
             )
+            report_path = html_path
             log(f"   Saved: {html_path}")
             _wb.open(html_path.resolve().as_uri())
             log("   Opened in browser.")
         except Exception as _exc:
-            log(f"   [WARN] HTML report skipped: {_exc}")
+            log(f"   [WARN] HTML report failed: {_exc}")
 
     # ── 9. Coach dashboard (HTML) — coaching mode only ────────────────────────
     # The client never sees the dashboard. It is James's working instrument:
@@ -407,7 +388,7 @@ def run_session(
         log(f"   Opening in browser: {dashboard_path}")
 
     if mode == "client":
-        log(f"\n[SUCCESS] Client report ready: {report_path}")
+        log(f"\n[SUCCESS] Client report ready — check your browser")
     else:
         log(f"\n[SUCCESS] Coach dashboard ready — check your browser")
     return RunResult(
