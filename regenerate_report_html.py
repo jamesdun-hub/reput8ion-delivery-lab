@@ -582,9 +582,13 @@ def _tips_html(tips: list) -> str:
 CSS = """
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:Arial,sans-serif;background:#f0f4f8;color:#1e293b;font-size:15px;line-height:1.65}
-header{background:#0A5C6B;color:#fff;padding:22px 32px 18px}
-header h1{font-size:1.3rem;font-weight:700}
-header .sub{opacity:.7;margin-top:5px;font-size:.88rem}
+header{background:#0A5C6B;color:#fff;padding:18px 32px 16px;
+  display:flex;align-items:center;justify-content:space-between;gap:24px}
+.header-text{flex:1;min-width:0}
+header h1{font-size:1.25rem;font-weight:700;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis}
+header .sub{opacity:.72;margin-top:4px;font-size:.85rem}
+.header-logo{height:52px;width:auto;flex-shrink:0;display:block}
 .container{max-width:920px;margin:0 auto;padding:20px 22px 40px}
 .report-section{background:#fff;border-radius:10px;padding:22px 26px;
   margin-bottom:18px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
@@ -702,7 +706,11 @@ header .sub{opacity:.7;margin-top:5px;font-size:.88rem}
 /* Closing */
 .closing-text{font-size:.97rem;color:#374151;line-height:1.7}
 
-footer{text-align:center;padding:18px;color:#94a3b8;font-size:.72rem}
+footer{text-align:center;padding:24px 18px 28px;color:#64748b;font-size:.78rem;
+  background:#fff;border-top:1px solid #e2e8f0;margin-top:8px}
+.footer-logo{height:38px;width:auto;display:block;margin:0 auto 12px;opacity:.75}
+footer a{color:#0A5C6B;text-decoration:none}
+footer a:hover{text-decoration:underline}
 
 /* ── TOC sidebar ── */
 .toc{position:fixed;left:0;top:0;width:190px;height:100vh;background:#fff;
@@ -993,6 +1001,11 @@ def render_report_html(
     body = "\n".join(sections)
     org_str = f' · {_e(org)}' if org else ""
 
+    logo_white = _logo_data_uri(_LOGO_WHITE)
+    logo_black = _logo_data_uri(_LOGO_BLACK)
+    logo_header = f'<img class="header-logo" src="{logo_white}" alt="Reput8ion Dynamics">' if logo_white else ""
+    logo_footer = f'<img class="footer-logo" src="{logo_black}" alt="Reput8ion Dynamics">' if logo_black else ""
+
     toc_items = [
         ("scorecard", "Delivery at a glance"),
         ("pace",      "Pace across the session"),
@@ -1034,13 +1047,20 @@ def render_report_html(
 </nav>
 
 <header>
-  <h1>{_e(candidate)} — Delivery Feedback Report</h1>
-  <p class="sub">{_e(session)}{org_str} &nbsp;·&nbsp; {_e(date)} &nbsp;·&nbsp; Reput8ion Dynamics</p>
+  <div class="header-text">
+    <h1>{_e(candidate)} — Delivery Feedback Report</h1>
+    <p class="sub">{_e(session)}{org_str} &nbsp;·&nbsp; {_e(date)}</p>
+  </div>
+  {logo_header}
 </header>
 <div class="container">
 {body}
 </div>
-<footer>Prepared by James Dunny, Reput8ion Dynamics &nbsp;·&nbsp; {_e(date)}</footer>
+<footer>
+  {logo_footer}
+  <p>Prepared by James Dunny &nbsp;·&nbsp; Reput8ion Dynamics &nbsp;·&nbsp; {_e(date)}</p>
+  <p style="margin-top:5px"><a href="mailto:james@reput8ion.ie">james@reput8ion.ie</a></p>
+</footer>
 
 <script>
 // ── Make all text editable ────────────────────────────────────────────────────
@@ -1050,7 +1070,7 @@ var SKIP_CLASSES = ['badge','pill','sig-chip','qa-v','rock-strong','rock-weak',
                     'verb-label','tgt','dev-num'];
 // Skip block/structural tags
 var SKIP_TAGS = ['DIV','SECTION','UL','OL','TABLE','TBODY','THEAD','TR',
-                 'CANVAS','SCRIPT','STYLE','NAV','HEADER','FOOTER'];
+                 'CANVAS','SCRIPT','STYLE','NAV','HEADER','FOOTER','IMG','BUTTON','A'];
 
 document.querySelectorAll('.container *, header h1, header .sub').forEach(function(el) {{
   if (SKIP_TAGS.includes(el.tagName)) return;
@@ -1087,6 +1107,27 @@ sections.forEach(function(s) {{ observer.observe(s); }});
     Path(out_path).parent.mkdir(parents=True, exist_ok=True)
     Path(out_path).write_text(page, encoding="utf-8")
     return out_path
+
+
+# ── Logo helper ───────────────────────────────────────────────────────────────
+
+_LOGO_WHITE = (
+    r"C:\Users\james\OneDrive - Reput8ion Communications"
+    r"\Repu8ion\Company materials\Brand Assets\logo_white.png"
+)
+_LOGO_BLACK = (
+    r"C:\Users\james\OneDrive - Reput8ion Communications"
+    r"\Repu8ion\Company materials\Brand Assets\logo_black.png"
+)
+
+
+def _logo_data_uri(path: str) -> str:
+    """Return a PNG data URI, or '' if the file is missing."""
+    import base64
+    p = Path(path)
+    if not p.exists():
+        return ""
+    return "data:image/png;base64," + base64.b64encode(p.read_bytes()).decode()
 
 
 # ── Entry point ───────────────────────────────────────────────────────────────
