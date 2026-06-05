@@ -92,14 +92,7 @@ def _clean_trainer_refs(text: str) -> str:
         "", text, flags=re.IGNORECASE
     )
 
-    # "The trainer [verb]ed [that/the importance of/...] X" → "X" (capitalised)
-    # The lookahead keeps the content; only the attribution phrase is removed.
-    text = re.sub(
-        r"The trainer \w+(?:ed|s)?\s+"
-        r"(?:that |the importance of |a need for |confidence in |",
-        "", text, flags=re.IGNORECASE
-    )
-    # Simpler second pass for remaining patterns
+    # Remove "The trainer [verb] [that/the importance of/...] X" attribution
     text = re.sub(
         r"\bThe trainer (?:suggested|recommended|emphasized|stressed|explained|"
         r"noted|highlighted|pointed out|observed|mentioned|described|expressed|"
