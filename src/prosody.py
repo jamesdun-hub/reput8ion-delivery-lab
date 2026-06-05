@@ -353,3 +353,90 @@ def _extract_energy(audio: np.ndarray, sr: int, sentence_boundaries_s: list[floa
             "trailing_off_events": [],
             "measured": False,
         }
+
+
+# ── Acoustic filler detection ──────────────────────────────────────────────────
+
+def detect_acoustic_fillers(
+    audio_path: str,
+    word_timestamps: list[dict],
+    cfg: dict | None = None,
+) -> int:
+    """Estimate the number of acoustic filler sounds (um, uh, er, etc.) in
+    the audio by looking for voiced speech in gaps between transcribed words.
+
+    This compensates for AssemblyAI's low disfluency-detection rate. The
+    approach:
+
+    1. For each gap between consecutive word end and the next word start
+       that falls in the typical filler-sound duration range (60–650 ms)
+    2. Extract that audio segment
+    3. Check whether it contains voiced energy above the noise floor
+       (RMS well above background AND low zero-crossing rate — voiced
+       speech, not silence or fricative noise)
+    4. Count such segments as probable filler sounds
+
+    word_timestamps: list of {start, end} in seconds (from TranscriptData.words).
+    Returns an integer count of probable filler sounds detected.
+    """
+    if not word_timestamps:
+        return 0
+
+    _cfg = cfg or {}
+    min_gap   = float(_cfg.get("filler_min_duration_s", 0.06))   # 60 ms
+    max_gap   = float(_cfg.get("filler_max_duration_s", 0.65))   # 650 ms
+    zcr_limit = float(_cfg.get("filler_zcr_limit",      0.12))   # voiced threshold
+    rms_ratio = float(_cfg.get("filler_rms_ratio",      3.5))    # signal / noise floor
+
+    try:
+        audio_path_str, is_temp = _extract_audio_if_video(audio_path)
+        try:
+            y, sr = librosa.load(audio_path_str, sr=16000, mono=True)
+        finally:
+            if is_temp:
+                import os
+                try:
+                    os.unlink(audio_path_str)
+                except OSError:
+                    pass
+
+        if len(y) == 0:
+            return 0
+
+        # Noise floor: 10th-percentile RMS across short frames
+        hop   = 256
+        frame = 512
+        rms_frames = librosa.feature.rms(y=y, frame_length=frame, hop_length=hop)[0]
+        noise_floor = float(np.percentile(rms_frames, 10)) + 1e-9
+        speech_rms_threshold = noise_floor * rms_ratio
+
+        filler_count = 0
+        for i in range(len(word_timestamps) - 1):
+            gap_start = word_timestamps[i]["end"]
+            gap_end   = word_timestamps[i + 1]["start"]
+            gap_dur   = gap_end - gap_start
+
+            if not (min_gap <= gap_dur <= max_gap):
+                continue
+
+            s0 = max(0, int(gap_start * sr))
+            s1 = min(len(y), int(gap_end   * sr))
+            seg = y[s0:s1]
+
+            if len(seg) < 100:  # fewer than ~6 ms at 16 kHz — skip
+                continue
+
+            seg_rms = float(np.sqrt(np.mean(seg ** 2)))
+            if seg_rms < speech_rms_threshold:
+                continue  # below speech level — silence or breath
+
+            seg_zcr = float(np.mean(librosa.feature.zero_crossing_rate(seg)[0]))
+            if seg_zcr > zcr_limit:
+                continue  # high ZCR = fricative/unvoiced — not a voiced filler
+
+            filler_count += 1
+
+        return filler_count
+
+    except Exception:
+        return 0  # never let detection failure break the pipeline

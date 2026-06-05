@@ -15,6 +15,8 @@ pace:
   chart_min_wpm: 100
 
 filler_words:
+  # Single-token disfluencies (detected by AssemblyAI with disfluencies=True).
+  # Note: ASR under-counts these; the acoustic_fillers metric supplements them.
   tokens:
     - um
     - uh
@@ -23,6 +25,21 @@ filler_words:
     - ah
     - hmm
     - eh
+  # Multi-word filler phrases — matched on the normalised transcript text.
+  # These are reliably captured even when ASR misses vocal hesitation sounds.
+  phrases:
+    - you know
+    - i mean
+    - you see
+    - know what i mean
+    - if you like
+    - if you will
+    - at the end of the day
+    - to be honest
+    - to be fair
+    - in terms of
+    - basically what
+    - the thing is
   green_per_100_words: 4.0
   watch_per_100_words: 6.0
 

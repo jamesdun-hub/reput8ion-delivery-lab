@@ -218,24 +218,63 @@ def compute_pace(
 
 # ---------- Fillers ----------
 
-def compute_fillers(transcript: TranscriptData, cfg: dict) -> dict:
-    """Count filler tokens against the configured filler set.
+def compute_fillers(
+    transcript: TranscriptData,
+    cfg: dict,
+    acoustic_filler_count: int = 0,
+) -> dict:
+    """Count filler tokens and phrases against the configured filler set.
 
-    Counts directly on the tokenised transcript text. AssemblyAI with
-    disfluencies=True surfaces ums and ers as ordinary tokens in the word
-    stream, so a text-based count and a word-stream count agree.
+    Two-pass approach:
+    1. Single-token disfluencies (um, uh, er, ...) from the ASR word stream.
+       Note: ASR under-counts these; acoustic_filler_count supplements them.
+    2. Multi-word filler phrases ("you know", "i mean", ...) from the
+       normalised transcript text using the same phrase-matcher as weak words.
+
+    acoustic_filler_count: probable hesitation sounds detected from the
+    audio waveform independent of ASR (see detect_acoustic_fillers()).
     """
-    filler_set = {t.lower() for t in cfg["tokens"]}
+    filler_set = {t.lower() for t in cfg.get("tokens", [])}
+    phrase_list = [p.lower() for p in cfg.get("phrases", [])]
     tokens = normalise_tokens(transcript.text)
     total_words = len(tokens)
 
-    by_token = Counter(t for t in tokens if t in filler_set)
-    total_fillers = sum(by_token.values())
+    # Single-token pass
+    by_token: Counter = Counter(t for t in tokens if t in filler_set)
+
+    # Phrase pass
+    by_phrase: Counter = Counter()
+    for phrase in phrase_list:
+        hits = _count_phrase_occurrences(tokens, phrase)
+        if hits:
+            by_phrase[phrase] = hits
+
+    asr_total = sum(by_token.values()) + sum(by_phrase.values())
+
+    # Acoustic supplement: if ASR missed um/uh sounds, the acoustic detector
+    # provides an independent estimate. We take the max of ASR token counts
+    # and the acoustic estimate for the "raw um/uh" bucket, then add phrases.
+    phrase_total = sum(by_phrase.values())
+    asr_token_total = sum(by_token.values())
+
+    # If acoustic count exceeds what ASR found in tokens, the difference
+    # represents sounds the ASR missed. We record this separately so the
+    # report can surface "X probable additional hesitation sounds detected".
+    acoustic_gap = max(0, acoustic_filler_count - asr_token_total)
+
+    total_fillers = asr_total + acoustic_gap
     per_100 = (total_fillers / total_words * 100.0) if total_words > 0 else 0.0
+
+    combined = dict(sorted({**dict(by_token), **dict(by_phrase)}.items(), key=lambda kv: -kv[1]))
+    if acoustic_gap > 0:
+        combined["[probable um/uh - acoustic]"] = acoustic_gap
 
     return {
         "total": total_fillers,
-        "by_token": dict(sorted(by_token.items(), key=lambda kv: -kv[1])),
+        "asr_total": asr_total,
+        "acoustic_filler_count": acoustic_filler_count,
+        "acoustic_gap": acoustic_gap,
+        "by_token": combined,
         "per_100_words": round(per_100, 2),
         "status": _band(per_100, cfg, "filler_per_100"),
         "total_words": total_words,
@@ -553,6 +592,7 @@ def compute_all_metrics(
     transcript: TranscriptData,
     prosody: ProsodyData | None,
     config: dict,
+    acoustic_filler_count: int = 0,
 ) -> dict:
     """Run every metric and return a single JSON-serialisable dict.
 
@@ -561,7 +601,7 @@ def compute_all_metrics(
     and the terminal output (cli.py). Keep keys stable.
     """
     pace = compute_pace(transcript, prosody, config["pace"])
-    fillers = compute_fillers(transcript, config["filler_words"])
+    fillers = compute_fillers(transcript, config["filler_words"], acoustic_filler_count)
     weak = compute_weak_words(transcript, config["weak_words"])
     openers = compute_sentence_openers(transcript, config["sentence_openers"])
     shape = compute_sentence_shape(transcript, config["sentence_length"])

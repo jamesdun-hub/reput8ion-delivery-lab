@@ -76,6 +76,7 @@ def run_session(
     from src.transcribe import transcribe
     from src.prosody import analyse
     from src.metrics import compute_all_metrics, filter_to_speaker
+    from src.prosody import detect_acoustic_fillers
     from src.coach import generate_coaching_narrative, CoachContext
     from src.dashboard import generate_dashboard
     # render_report and render_client_report are imported inside the mode
@@ -176,9 +177,25 @@ def run_session(
     log(f"   Pauses: {len(prosody_data.pauses)} detected")
     log(f"   Speaking time: {prosody_data.speaking_time_seconds:.1f}s")
 
+    # ── 3b. Acoustic filler detection ─────────────────────────────────────────
+    # AssemblyAI with disfluencies=True misses most um/uh sounds in practice.
+    # This pass scans the audio for voiced speech in inter-word gaps — the same
+    # technique acoustic tools like Yoodli use — and passes the count to
+    # compute_fillers so it can surface the gap between ASR and acoustic totals.
+    log("[FILLERS] Acoustic filler detection...")
+    word_timestamps = [{"start": w.start, "end": w.end}
+                       for w in analysis_transcript.words]
+    acoustic_filler_count = detect_acoustic_fillers(
+        prosody_path, word_timestamps, config.get("prosody", {})
+    )
+    log(f"   Acoustic fillers detected: {acoustic_filler_count}")
+
     # ── 4. Metrics ────────────────────────────────────────────────────────────
     log("\n[METRICS] Computing...")
-    metrics = compute_all_metrics(analysis_transcript, prosody_data, config)
+    metrics = compute_all_metrics(
+        analysis_transcript, prosody_data, config,
+        acoustic_filler_count=acoustic_filler_count,
+    )
 
     # Surface a brief summary to the log; if a richer callback was supplied
     # (the CLI passes _print_summary) call it instead.
