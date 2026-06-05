@@ -43,6 +43,15 @@ _BANNED_CLOSING = {
 
 # ── Text cleaning ─────────────────────────────────────────────────────────────
 
+def _capitalise_sentences(text: str) -> str:
+    """Capitalise the first word of every sentence and of the whole text."""
+    # After .  !  ? followed by any whitespace
+    text = re.sub(r"(?<=[.!?])(\s+)([a-z])", lambda m: m.group(1) + m.group(2).upper(), text)
+    if text and text[0].islower():
+        text = text[0].upper() + text[1:]
+    return text
+
+
 def _to_second_person(text: str, first_name: str) -> str:
     """Replace first name and third-person pronouns with second person.
 
@@ -53,8 +62,9 @@ def _to_second_person(text: str, first_name: str) -> str:
     if not text or not first_name:
         return text
     fn = re.escape(first_name)
+    # Strip vocative "Mark, " at the very start before any substitution turns it into "you, "
+    text = re.sub(rf"^{fn},\s*", "", text, flags=re.IGNORECASE)
     text = re.sub(rf"\b{fn}'s\b", "your", text)
-    text = re.sub(rf"\b{fn},",    "you,", text)
     text = re.sub(rf"\b{fn}\b",   "you",  text)
     # Gendered pronouns referring to the participant
     text = re.sub(r"\bHis\b", "Your", text)
@@ -67,7 +77,7 @@ def _to_second_person(text: str, first_name: str) -> str:
     text = re.sub(r"\byou is\b",  "you are", text)
     text = re.sub(r"\byou was\b", "you were", text)
     text = re.sub(r"\byou's\b",   "your", text)
-    return text
+    return _capitalise_sentences(text)
 
 
 def _clean_trainer_refs(text: str) -> str:
@@ -105,11 +115,6 @@ def _clean_trainer_refs(text: str) -> str:
 
     # Any remaining "the trainer" → "I"
     text = re.sub(r"\bthe trainer\b", "I", text, flags=re.IGNORECASE)
-
-    # Capitalise first letter of sentences that lost their subject
-    text = re.sub(r"(?<=\. )([a-z])", lambda m: m.group(1).upper(), text)
-    if text and text[0].islower():
-        text = text[0].upper() + text[1:]
 
     # Clean whitespace artefacts
     text = re.sub(r" {2,}", " ", text)
@@ -177,7 +182,9 @@ def _prose_block(text: str) -> str:
     parts = [p.strip() for p in re.split(r"\n{2,}", text.strip()) if p.strip()]
     if not parts:
         return f'<p class="prose">{_e(text)}</p>'
-    return "".join(f'<p class="prose">{_e(p)}</p>' for p in parts)
+    def _cap(p: str) -> str:
+        return p[0].upper() + p[1:] if p and p[0].islower() else p
+    return "".join(f'<p class="prose">{_e(_cap(p))}</p>' for p in parts)
 
 
 def _verbatim_box(original: str, tighter: str) -> str:
@@ -234,59 +241,173 @@ def _delivery_scorecard(metrics: dict) -> str:
     )
 
 
-def _pace_chart_html(pace_data: dict) -> str:
-    windows = [w for w in (pace_data.get("windows") or []) if w.get("wpm", 0) > 50]
+def _compute_filler_windows(
+    words: list, pace_windows: list, filler_set: set
+) -> list:
+    """Count filler words falling inside each pace window."""
+    counts = []
+    for w in pace_windows:
+        t0, t1 = w["start_seconds"], w["end_seconds"]
+        c = sum(
+            1 for wd in words
+            if t0 <= wd.get("start", -1) < t1
+            and wd.get("text", "").strip(".,!?;:\"'").lower() in filler_set
+        )
+        counts.append(c)
+    return counts
+
+
+def _pace_chart_html(pace_data: dict, filler_windows: list | None = None) -> str:
+    """Combined pace (line) + filler-words (bar) chart with nuanced commentary."""
+    all_windows = pace_data.get("windows") or []
+    # Keep windows where pace is credible (>50 wpm = some speech present)
+    windows = [w for w in all_windows if w.get("wpm", 0) > 50]
     if not windows:
         return "<p>Pace data not available.</p>"
 
-    labels  = [f"{int(w['start_seconds']//60)}:{int(w['start_seconds']%60):02d}" for w in windows]
-    values  = [w["wpm"] for w in windows]
-    colours = ["'#EF4444'" if v > 170 else "'#0CC0DF'" if v >= 140 else "'#F59E0B'" for v in values]
+    labels = [f"{int(w['start_seconds']//60)}:{int(w['start_seconds']%60):02d}"
+              for w in windows]
+    pace_vals = [w["wpm"] for w in windows]
     n = len(labels)
 
+    # Match filler_windows to the filtered window list by index
+    # (windows filtered from all_windows — use original indices)
+    filtered_indices = [i for i, w in enumerate(all_windows) if w.get("wpm", 0) > 50]
+    if filler_windows and len(filler_windows) == len(all_windows):
+        filler_vals = [filler_windows[i] for i in filtered_indices]
+    elif filler_windows and len(filler_windows) == len(windows):
+        filler_vals = list(filler_windows)
+    else:
+        filler_vals = [0] * n
+
+    max_filler = max(filler_vals) if filler_vals else 1
+    filler_ymax = max(max_filler + 2, 8)
+
+    # Pace colour: amber if slow, cyan if in range, orange if fast (not red — fast can convey passion)
+    pace_point_colours = json.dumps(
+        ["#F59E0B" if v < 140 else "#F97316" if v > 170 else "#0CC0DF" for v in pace_vals]
+    )
+
+    wpm_ymax = max(max(pace_vals) * 1.15, 210)
+
+    # Run-length-encode to detect sustained fast/slow segments for commentary
+    fast_run = _longest_run(pace_vals, lambda v: v > 170)
+    slow_run = _longest_run(pace_vals, lambda v: v < 140)
+    variety_note = ""
+    if fast_run >= 4:
+        variety_note = (
+            f"There were {fast_run} consecutive windows above 170 wpm — "
+            "passion is good, but sustained speed can reduce audience absorption. "
+            "Aim to vary: accelerate to punch a point, then ease back."
+        )
+    elif slow_run >= 4:
+        variety_note = (
+            f"There were {slow_run} consecutive windows below 140 wpm — "
+            "a slower pace can signal authority, but sustained slowness risks losing energy. "
+            "Use pauses deliberately, then lift the pace."
+        )
+    else:
+        variety_note = (
+            "Your pace varied well across the session. "
+            "Moments above 170 wpm can convey energy and passion — the key is variety, "
+            "not staying rigidly in a single band."
+        )
+
+    filler_note = ""
+    peak_filler_idx = filler_vals.index(max(filler_vals)) if filler_vals else None
+    if peak_filler_idx is not None and max(filler_vals) >= 3:
+        filler_note = (
+            f" Fillers peaked at {labels[peak_filler_idx]} "
+            f"({max(filler_vals)} in that 30-second window)."
+        )
+
     return f"""
-<div class="chart-box"><canvas id="paceChart" height="90"></canvas></div>
+<div class="chart-box"><canvas id="paceChart" height="100"></canvas></div>
 <script>
 new Chart(document.getElementById('paceChart').getContext('2d'), {{
   data: {{
     labels: {json.dumps(labels)},
     datasets: [
-      {{ label: 'Min', type: 'line', data: {json.dumps([140]*n)},
-         borderColor: 'rgba(34,197,94,0.45)', borderDash: [5,3],
-         borderWidth: 1.5, pointRadius: 0, fill: false, yAxisID: 'y', order: 3 }},
-      {{ label: 'Max', type: 'line', data: {json.dumps([170]*n)},
-         borderColor: 'rgba(245,158,11,0.5)', borderDash: [5,3],
+      {{ label: 'Ideal min', type: 'line',
+         data: {json.dumps([140]*n)},
+         borderColor: 'rgba(34,197,94,0.30)', borderDash: [5,3],
+         borderWidth: 1.5, pointRadius: 0, fill: false, yAxisID: 'yWpm', order: 5 }},
+      {{ label: 'Ideal max', type: 'line',
+         data: {json.dumps([170]*n)},
+         borderColor: 'rgba(34,197,94,0.30)', borderDash: [5,3],
          borderWidth: 1.5, pointRadius: 0,
-         fill: '-1', backgroundColor: 'rgba(34,197,94,0.05)', yAxisID: 'y', order: 2 }},
-      {{ label: 'Pace (wpm)', type: 'bar', data: {json.dumps(values)},
-         backgroundColor: [{','.join(colours)}],
-         borderColor: 'rgba(255,255,255,0.3)', borderWidth: 1, borderRadius: 3,
-         yAxisID: 'y', order: 1 }},
+         fill: '-1', backgroundColor: 'rgba(34,197,94,0.05)', yAxisID: 'yWpm', order: 4 }},
+      {{ label: 'Fillers', type: 'bar',
+         data: {json.dumps(filler_vals)},
+         backgroundColor: 'rgba(245,158,11,0.30)',
+         borderColor: 'rgba(245,158,11,0.55)',
+         borderWidth: 1, borderRadius: 2,
+         yAxisID: 'yFillers', order: 3 }},
+      {{ label: 'Pace (wpm)', type: 'line',
+         data: {json.dumps(pace_vals)},
+         borderColor: '#0CC0DF', backgroundColor: 'rgba(12,192,223,0.07)',
+         fill: false, tension: 0.3,
+         pointRadius: 4, pointBackgroundColor: {pace_point_colours},
+         pointBorderColor: 'rgba(255,255,255,0.6)', pointBorderWidth: 1,
+         borderWidth: 2.5, spanGaps: false, yAxisID: 'yWpm', order: 1 }},
     ]
   }},
   options: {{
     responsive: true,
+    interaction: {{ mode: 'index', intersect: false }},
     plugins: {{
-      legend: {{ display: false }},
-      tooltip: {{ callbacks: {{ label: ctx =>
-        ctx.dataset.label === 'Pace (wpm)' ? ctx.parsed.y.toFixed(0) + ' wpm' : '' }} }}
+      legend: {{
+        display: true,
+        labels: {{ filter: item => !['Ideal min','Ideal max'].includes(item.text), boxWidth: 14 }}
+      }},
+      tooltip: {{
+        callbacks: {{
+          label: ctx => {{
+            if (ctx.dataset.label === 'Pace (wpm)') return 'Pace: ' + ctx.parsed.y.toFixed(0) + ' wpm';
+            if (ctx.dataset.label === 'Fillers') return 'Fillers: ' + ctx.parsed.y;
+            return '';
+          }}
+        }}
+      }}
     }},
     scales: {{
-      y: {{ min: 0, max: {max(max(values)*1.2, 210):.0f},
-            title: {{ display: true, text: 'Words per minute', color: '#64748b' }},
-            grid: {{ color: 'rgba(0,0,0,0.04)' }},
-            ticks: {{ color: '#94a3b8', font: {{ size: 10 }} }} }},
-      x: {{ grid: {{ display: false }},
-            ticks: {{ color: '#94a3b8', font: {{ size: 10 }}, maxRotation: 45 }} }}
+      yWpm: {{
+        type: 'linear', position: 'left', min: 80, max: {wpm_ymax:.0f},
+        title: {{ display: true, text: 'Pace (wpm)', color: '#0CC0DF' }},
+        grid: {{ color: 'rgba(0,0,0,0.04)' }},
+        ticks: {{ color: '#94a3b8', font: {{ size: 10 }} }}
+      }},
+      yFillers: {{
+        type: 'linear', position: 'right', min: 0, max: {filler_ymax},
+        title: {{ display: true, text: 'Fillers', color: '#F59E0B' }},
+        grid: {{ drawOnChartArea: false }},
+        ticks: {{ color: '#F59E0B', font: {{ size: 10 }}, stepSize: 1 }}
+      }},
+      x: {{
+        grid: {{ display: false }},
+        ticks: {{ color: '#94a3b8', font: {{ size: 10 }}, maxRotation: 45 }}
+      }}
     }}
   }}
 }});
 </script>
 <div class="chart-legend">
-  <span class="leg leg-good">▪ 140–170 wpm  ideal</span>
-  <span class="leg leg-slow">▪ below 140  below target</span>
-  <span class="leg leg-fast">▪ above 170  above target</span>
-</div>"""
+  <span class="leg" style="color:#0CC0DF">▪ Pace (wpm)</span>
+  &nbsp;&nbsp;
+  <span class="leg" style="color:#F59E0B">▪ Filler words per window</span>
+  &nbsp;&nbsp;
+  <span class="leg" style="color:rgba(34,197,94,0.7)">▪ 140–170 wpm reference band</span>
+</div>
+<p class="caveat" style="margin-top:10px">{_e(variety_note)}{_e(filler_note)}</p>"""
+
+
+def _longest_run(values: list, predicate) -> int:
+    """Return the length of the longest consecutive run matching predicate."""
+    best = cur = 0
+    for v in values:
+        cur = cur + 1 if predicate(v) else 0
+        best = max(best, cur)
+    return best
 
 
 def _pillar_assessment(verdicts: dict) -> str:
@@ -588,11 +709,12 @@ footer{text-align:center;padding:18px;color:#94a3b8;font-size:.72rem}
 # ── Main renderer ─────────────────────────────────────────────────────────────
 
 def render_report_html(
-    metrics:       dict,
-    narrative:     dict,
-    client_report: dict | None,
-    context:       dict,
-    out_path:      str,
+    metrics:        dict,
+    narrative:      dict,
+    client_report:  dict | None,
+    context:        dict,
+    out_path:       str,
+    filler_windows: list | None = None,
 ) -> str:
     candidate  = context.get("candidate", "")
     first_name = candidate.split()[0] if candidate else ""
@@ -617,16 +739,9 @@ def render_report_html(
 
     # ── 2. PACE CHART ─────────────────────────────────────────────────────────
     pace_text = narrative.get("pace_and_tone_narrative", "")
-    if pace_text:
-        sents = [s.strip() for s in re.split(r"(?<=[.!?])\s+", pace_text.strip()) if s.strip()]
-        summary = _to_second_person(_e(". ".join(sents[:2])), first_name)
-        chart_note = f'<p class="caveat" style="margin-top:10px">{summary}</p>' if summary else ""
-    else:
-        chart_note = ""
-
     sections.append(_section(
         "Pace across the session",
-        _pace_chart_html(metrics.get("pace") or {}) + chart_note,
+        _pace_chart_html(metrics.get("pace") or {}, filler_windows),
         "pace",
     ))
 
@@ -803,10 +918,23 @@ def render_report_html(
     closing_raw = cr.get("closing_assessment") or narrative.get("final_word", "")
     if closing_raw:
         closing_clean = _clean_closing(_clean_prose(closing_raw, first_name))
-        if len(closing_clean.split()) < 15:
-            closing_clean = _clean_closing(_clean_prose(
-                narrative.get("overview", ""), first_name
-            ))
+        # Remove any "you," vocative artefact left after substituting "Mark,"
+        closing_clean = re.sub(r"^you,\s*", "", closing_clean, flags=re.IGNORECASE)
+        closing_clean = _capitalise_sentences(closing_clean)
+        # If too short, supplement from overview or final_word
+        if len(closing_clean.split()) < 40:
+            supplement_sources = [
+                cr.get("executive_summary", ""),
+                narrative.get("overview", ""),
+                narrative.get("final_word", ""),
+            ]
+            for src in supplement_sources:
+                extra = _clean_closing(_clean_prose(src, first_name))
+                extra = re.sub(r"^you,\s*", "", extra, flags=re.IGNORECASE)
+                extra = _capitalise_sentences(extra)
+                if len(extra.split()) >= 30:
+                    closing_clean = extra
+                    break
         if closing_clean:
             sections.append(_section(
                 "Closing assessment",
@@ -858,6 +986,27 @@ def _pick_folder() -> Path:
     return max(subdirs, key=lambda d: d.stat().st_mtime)
 
 
+def _load_filler_windows(folder: Path, metrics: dict) -> list | None:
+    """Compute per-window filler counts from transcript words + config filler set."""
+    import yaml
+    cfg_path = PROJECT_DIR / "config.yaml"
+    words_path = folder / "transcript_full.json"
+    if not cfg_path.exists() or not words_path.exists():
+        return None
+    try:
+        cfg = yaml.safe_load(cfg_path.read_text(encoding="utf-8"))
+        filler_set = {t.lower() for t in cfg.get("filler_words", {}).get("tokens", [])}
+        raw = json.loads(words_path.read_text(encoding="utf-8"))
+        words = raw if isinstance(raw, list) else raw.get("words", [])
+        pace_windows = metrics.get("pace", {}).get("windows") or []
+        counts = _compute_filler_windows(words, pace_windows, filler_set)
+        print(f"[HTML] Filler windows computed: {counts}")
+        return counts
+    except Exception as exc:
+        print(f"[HTML] Filler window computation skipped: {exc}")
+        return None
+
+
 def main() -> None:
     folder = _pick_folder()
     print(f"[HTML] Using {folder}")
@@ -880,6 +1029,8 @@ def main() -> None:
     else:
         print(f"[HTML] No client_report.json — falling back to coaching narrative")
 
+    filler_windows = _load_filler_windows(folder, metrics)
+
     name  = folder.name
     parts = name.rsplit("-", 1)
     candidate = parts[0].strip() if len(parts) == 2 else name
@@ -896,6 +1047,7 @@ def main() -> None:
     render_report_html(
         metrics=metrics, narrative=narrative,
         client_report=cr, context=context, out_path=out_path,
+        filler_windows=filler_windows,
     )
     print(f"[HTML] Written: {out_path}")
     webbrowser.open(Path(out_path).resolve().as_uri())
