@@ -32,20 +32,46 @@ const path = Astro.url.pathname;
 
 <style>
   header {
-    position: sticky;
+    position: fixed;
     top: 0;
+    left: 0;
+    right: 0;
     z-index: 50;
-    background: rgba(12, 18, 20, 0.82);
+    background: rgba(12, 18, 20, 0.72);
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
     border-bottom: 1px solid var(--hairline-dark);
+  }
+  /* Starts transparent over the imagery, condenses to glass as you scroll */
+  @supports (animation-timeline: scroll()) {
+    @media (prefers-reduced-motion: no-preference) {
+      header {
+        animation: navglass linear both;
+        animation-timeline: scroll();
+        animation-range: 0 240px;
+      }
+      @keyframes navglass {
+        from {
+          background: rgba(12, 18, 20, 0);
+          border-bottom-color: transparent;
+          backdrop-filter: blur(0);
+          -webkit-backdrop-filter: blur(0);
+        }
+        to {
+          background: rgba(12, 18, 20, 0.72);
+          border-bottom-color: var(--hairline-dark);
+          backdrop-filter: blur(14px);
+          -webkit-backdrop-filter: blur(14px);
+        }
+      }
+    }
   }
   .bar {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 1rem 2rem;
-    min-height: 4.2rem;
+    min-height: var(--nav-h);
     flex-wrap: wrap;
     padding-block: 0.6rem;
   }

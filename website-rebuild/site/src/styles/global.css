@@ -1,5 +1,5 @@
-/* Editorial serif for reading, a quiet grotesk for the interface,
-   dark bands for depth, the teals used with intent. */
+/* Cinematic production register: full-screen imagery, display type as the
+   visual, CSS-only motion. Serif for reading, grotesk for the interface. */
 
 :root {
   --ink: #14181a;
@@ -19,8 +19,9 @@
   --serif: 'Source Serif 4', Georgia, 'Times New Roman', serif;
   --sans: 'Inter', 'Helvetica Neue', Arial, sans-serif;
   --measure: 64ch;
-  --container: 74rem;
+  --container: 78rem;
   --pad: clamp(1.25rem, 5vw, 3rem);
+  --nav-h: 4.4rem;
 }
 
 * {
@@ -38,9 +39,13 @@ body {
   font-size: clamp(1.1rem, 1.03rem + 0.3vw, 1.22rem);
   line-height: 1.68;
   color: var(--ink);
-  background: var(--paper);
+  background: var(--dark);
   font-optical-sizing: auto;
   -webkit-font-smoothing: antialiased;
+}
+
+main {
+  background: var(--paper);
 }
 
 ::selection {
@@ -62,7 +67,8 @@ body {
 }
 
 .band {
-  padding-block: clamp(3.5rem, 8vw, 6.5rem);
+  padding-block: clamp(4rem, 9vw, 7.5rem);
+  position: relative;
 }
 
 .band--dark {
@@ -72,6 +78,17 @@ body {
 
 .band--tint {
   background: var(--paper-tint);
+}
+
+/* Inner-page header band. Fixed nav sits over the top of it. */
+.page-head {
+  padding-block: clamp(8rem, 16vw, 12rem) clamp(3rem, 7vw, 5.5rem);
+  position: relative;
+  overflow: hidden;
+}
+.page-head h1 {
+  font-size: clamp(2.6rem, 1.6rem + 4.5vw, 5rem);
+  max-width: 16ch;
 }
 
 .prose {
@@ -90,15 +107,15 @@ body {
 
 h1, h2, h3 {
   font-weight: 600;
-  line-height: 1.08;
-  letter-spacing: -0.015em;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
   text-wrap: balance;
 }
 h1 {
-  font-size: clamp(2.4rem, 1.6rem + 3.6vw, 4.2rem);
+  font-size: clamp(2.6rem, 1.6rem + 4.5vw, 5.5rem);
 }
 h2 {
-  font-size: clamp(1.55rem, 1.25rem + 1.2vw, 2.2rem);
+  font-size: clamp(1.7rem, 1.3rem + 1.6vw, 2.6rem);
 }
 h3 {
   font-size: 1.25rem;
@@ -108,7 +125,7 @@ h3 {
   font-family: var(--sans);
   font-size: 0.76rem;
   font-weight: 600;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--teal-deep);
   display: flex;
@@ -123,11 +140,37 @@ h3 {
   background: var(--teal-deep);
   opacity: 0.5;
 }
-.band--dark .eyebrow {
+.band--dark .eyebrow,
+.page-head .eyebrow {
   color: var(--accent);
 }
-.band--dark .eyebrow::after {
+.band--dark .eyebrow::after,
+.page-head .eyebrow::after {
   background: var(--accent);
+}
+
+/* Giant ghosted numeral behind a section */
+.ghost-num {
+  position: absolute;
+  top: clamp(1rem, 4vw, 2.5rem);
+  right: var(--pad);
+  font-family: var(--sans);
+  font-size: clamp(6rem, 14vw, 12rem);
+  font-weight: 700;
+  line-height: 1;
+  color: transparent;
+  -webkit-text-stroke: 1.5px rgba(9, 141, 163, 0.22);
+  pointer-events: none;
+  user-select: none;
+  z-index: 0;
+}
+.band--dark .ghost-num {
+  -webkit-text-stroke-color: rgba(12, 192, 223, 0.2);
+}
+.band > .container,
+.band > .container--narrow {
+  position: relative;
+  z-index: 1;
 }
 
 .lead {
@@ -135,7 +178,8 @@ h3 {
   line-height: 1.55;
   color: var(--ink-soft);
 }
-.band--dark .lead {
+.band--dark .lead,
+.page-head .lead {
   color: var(--on-dark-muted);
 }
 
@@ -154,7 +198,8 @@ h3 {
   letter-spacing: 0.05em;
   color: var(--ink-soft);
 }
-.band--dark .meta {
+.band--dark .meta,
+.page-head .meta {
   color: var(--on-dark-muted);
 }
 
@@ -172,10 +217,12 @@ a {
 a:hover {
   color: var(--teal-deep);
 }
-.band--dark a {
+.band--dark a,
+.page-head a {
   color: var(--accent);
 }
-.band--dark a:hover {
+.band--dark a:hover,
+.page-head a:hover {
   color: var(--on-dark);
 }
 
@@ -188,7 +235,7 @@ a:hover {
   display: inline-flex;
   align-items: center;
   gap: 0.6rem;
-  padding: 0.85rem 1.5rem;
+  padding: 0.9rem 1.6rem;
   border: 1px solid currentColor;
   background-image: none;
   transition: all 0.18s ease;
@@ -198,7 +245,8 @@ a:hover {
   border-color: var(--teal-forest);
   color: #fff;
 }
-.band--dark .btn:hover {
+.band--dark .btn:hover,
+.hero .btn:hover {
   background: var(--accent);
   border-color: var(--accent);
   color: var(--dark);
@@ -216,9 +264,83 @@ img {
   display: block;
 }
 
+/* Cinematic image treatment: black and white with a cold teal cast */
+.cine {
+  position: relative;
+}
+.cine img {
+  filter: grayscale(1) contrast(1.06) brightness(0.96);
+}
+.cine::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--teal-deep);
+  mix-blend-mode: color;
+  opacity: 0.14;
+  pointer-events: none;
+}
+
 .rule {
   border: 0;
   border-top: 1px solid var(--hairline);
+}
+
+/* Ticker ----------------------------------------------------------- */
+
+.ticker {
+  overflow: hidden;
+  border-block: 1px solid var(--hairline-dark);
+  padding-block: 1.1rem;
+  background: var(--dark);
+  color: var(--on-dark);
+}
+.ticker-track {
+  display: flex;
+  gap: 3.5rem;
+  width: max-content;
+  animation: ticker 30s linear infinite;
+}
+.ticker-track span {
+  font-size: clamp(1.1rem, 1.6vw, 1.45rem);
+  font-style: italic;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 3.5rem;
+}
+.ticker-track span::after {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+@keyframes ticker {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* Scroll reveals. CSS only, progressive, off for reduced motion. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .reveal {
+      animation: rise 1s ease both;
+      animation-timeline: view();
+      animation-range: entry 5% entry 35%;
+    }
+  }
+}
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(2.2rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 /* Sample and placeholder marking. Visible, machine-checkable, unshippable.
@@ -230,17 +352,21 @@ img {
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #b4552d;
-  border: 1px dashed rgba(180, 85, 45, 0.6);
+  color: #d98a63;
+  border: 1px dashed rgba(217, 138, 99, 0.6);
   border-radius: 2px;
   padding: 0.2rem 0.55rem;
   margin-bottom: 0.9rem;
 }
+main .band:not(.band--dark) .sample-tag {
+  color: #b4552d;
+  border-color: rgba(180, 85, 45, 0.6);
+}
 .placeholder-block {
   display: block;
   color: inherit;
-  opacity: 0.75;
-  border-left: 2px dashed rgba(180, 85, 45, 0.6);
+  opacity: 0.8;
+  border-left: 2px dashed rgba(217, 138, 99, 0.5);
   padding-left: 1rem;
   margin-top: 0.4rem;
 }

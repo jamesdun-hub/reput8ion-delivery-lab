@@ -18,6 +18,7 @@ const dateFmt = new Intl.DateTimeFormat('en-IE', {
   description="Published thinking on reputation, narrative, issues management and counsel under pressure."
 >
   <section class="band--dark page-head">
+    <span class="ghost-num">N</span>
     <div class="container">
       <p class="eyebrow">Notes</p>
       <h1>Published thinking.</h1>
@@ -29,7 +30,7 @@ const dateFmt = new Intl.DateTimeFormat('en-IE', {
       <ol class="stream">
         {
           notes.map((n) => (
-            <li>
+            <li class="reveal">
               <a href={`/notes/${n.id}`}>
                 <span class="date meta">{dateFmt.format(n.data.date)}</span>
                 <span class="body">
@@ -49,9 +50,6 @@ const dateFmt = new Intl.DateTimeFormat('en-IE', {
 </Base>
 
 <style>
-  .page-head {
-    padding-block: clamp(3rem, 6vw, 5rem);
-  }
   .stream {
     list-style: none;
     border-top: 1px solid var(--hairline);
@@ -80,9 +78,10 @@ const dateFmt = new Intl.DateTimeFormat('en-IE', {
   }
   .title {
     display: block;
-    font-size: 1.4em;
+    font-size: clamp(1.4rem, 1.1rem + 1.4vw, 2.1rem);
     font-weight: 600;
-    line-height: 1.2;
+    line-height: 1.15;
+    letter-spacing: -0.015em;
   }
   .title .arrow {
     display: inline-block;

@@ -13,6 +13,7 @@ const pad = (n: number) => String(n).padStart(2, '0');
   description="The problems we are asked to fix: narrative, issues with a long fuse, senior delivery, board alignment and the four-hour call."
 >
   <section class="band--dark page-head">
+    <span class="ghost-num">P</span>
     <div class="container">
       <p class="eyebrow">Problems</p>
       <h1>The work, as clients describe it.</h1>
@@ -28,7 +29,7 @@ const pad = (n: number) => String(n).padStart(2, '0');
       <ol class="list">
         {
           problems.map((p, i) => (
-            <li>
+            <li class="reveal">
               <a href={`/problems/${p.id}`}>
                 <span class="num">{pad(i + 1)}</span>
                 <span class="body">
@@ -45,9 +46,6 @@ const pad = (n: number) => String(n).padStart(2, '0');
 </Base>
 
 <style>
-  .page-head {
-    padding-block: clamp(3rem, 6vw, 5rem);
-  }
   .page-head .lead {
     margin-top: 1.2rem;
     max-width: 52ch;
@@ -58,43 +56,54 @@ const pad = (n: number) => String(n).padStart(2, '0');
   }
   .list a {
     display: grid;
-    grid-template-columns: 4rem 1fr;
-    gap: 1rem;
-    padding: 2rem clamp(0.5rem, 2vw, 1.5rem);
+    grid-template-columns: clamp(3.5rem, 8vw, 6.5rem) 1fr;
+    gap: clamp(1rem, 3vw, 2.5rem);
+    align-items: center;
+    padding: clamp(1.8rem, 3.5vw, 2.6rem) clamp(0.75rem, 2vw, 1.75rem);
     border-bottom: 1px solid var(--hairline);
     color: var(--ink);
     background-image: none;
-    transition: background 0.18s ease;
+    transition: background 0.22s ease, color 0.22s ease;
   }
   .list a:hover {
-    background: var(--paper-tint);
+    background: var(--dark);
+    color: var(--on-dark);
   }
   .num {
     font-family: var(--sans);
-    font-size: 0.82rem;
-    font-weight: 600;
-    letter-spacing: 0.1em;
-    color: var(--teal-deep);
-    padding-top: 0.5rem;
+    font-size: clamp(1.3rem, 2.5vw, 2rem);
+    font-weight: 700;
+    color: transparent;
+    -webkit-text-stroke: 1px var(--teal-deep);
+  }
+  .list a:hover .num {
+    color: var(--accent);
+    -webkit-text-stroke-color: var(--accent);
   }
   .title {
     display: block;
-    font-size: 1.45em;
+    font-size: clamp(1.4rem, 1.1rem + 1.6vw, 2.3rem);
     font-weight: 600;
-    line-height: 1.2;
+    line-height: 1.15;
+    letter-spacing: -0.015em;
   }
   .title .arrow {
     display: inline-block;
     color: var(--teal-deep);
-    transition: transform 0.18s ease;
+    transition: transform 0.22s ease, color 0.22s ease;
   }
   .list a:hover .arrow {
-    transform: translateX(5px);
+    transform: translateX(6px);
+    color: var(--accent);
   }
   .summary {
     display: block;
     margin-top: 0.5rem;
     color: var(--ink-soft);
     max-width: 62ch;
+    transition: color 0.22s ease;
+  }
+  .list a:hover .summary {
+    color: var(--on-dark-muted);
   }
 </style>

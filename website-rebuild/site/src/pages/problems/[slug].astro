@@ -1,7 +1,6 @@
 ---
 import { getCollection, render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
-import Frame from '../../components/Frame.astro';
 import SampleTag from '../../components/SampleTag.astro';
 import samples from '../../data/samples.json';
 
@@ -25,6 +24,7 @@ const pad = (n: number) => String(n).padStart(2, '0');
   description={entry.data.summary}
 >
   <section class="band--dark page-head">
+    <span class="ghost-num">{pad(index + 1)}</span>
     <div class="container">
       <p class="eyebrow">Problem {pad(index + 1)}</p>
       {isSample && <SampleTag label="Sample entry showing shape and register. James writes the final copy" />}
@@ -33,64 +33,55 @@ const pad = (n: number) => String(n).padStart(2, '0');
     </div>
   </section>
 
+  {
+    showSpeakingFrame && (
+      <div class="stage cine">
+        <picture>
+          <source
+            type="image/webp"
+            srcset="/images/jd-speaking-640.webp 640w, /images/jd-speaking-960.webp 960w, /images/jd-speaking-1262.webp 1262w"
+            sizes="100vw"
+          />
+          <img
+            src="/images/jd-speaking-1262.jpg"
+            srcset="/images/jd-speaking-640.jpg 640w, /images/jd-speaking-960.jpg 960w, /images/jd-speaking-1262.jpg 1262w"
+            sizes="100vw"
+            alt="James Dunny on a conference panel"
+            width="1262"
+            height="1600"
+            loading="lazy"
+            decoding="async"
+          />
+        </picture>
+      </div>
+    )
+  }
+
   <section class="band">
-    <div class="container layout">
-      <article class="prose">
+    <div class="container--narrow">
+      <article class="prose reveal">
         <Content />
         <p class="foot">
           If this is the conversation happening in your organisation, <a href="/contact">talk to us</a>.
         </p>
       </article>
-      {
-        showSpeakingFrame && (
-          <aside class="figure">
-            <Frame
-              name="jd-speaking"
-              alt="James Dunny on a conference panel"
-              widths={[640, 960, 1262]}
-              sizes="(min-width: 980px) 26rem, 100vw"
-              width={1262}
-              height={1600}
-            />
-          </aside>
-        )
-      }
     </div>
   </section>
 </Base>
 
 <style>
-  .page-head {
-    padding-block: clamp(3rem, 6vw, 5rem);
+  .stage {
+    max-height: 72vh;
+    max-width: 100rem;
+    margin-inline: auto;
+    overflow: hidden;
+    background: var(--dark);
   }
-  .page-head h1 {
-    max-width: 18ch;
-  }
-  .layout {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: clamp(2.5rem, 5vw, 4.5rem);
-  }
-  .layout:has(.figure) {
-    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
-    align-items: start;
-  }
-  @media (max-width: 980px) {
-    .layout:has(.figure) {
-      grid-template-columns: 1fr;
-    }
-  }
-  .figure {
-    position: sticky;
-    top: 6rem;
-    border: 1px solid var(--hairline);
-    padding: 0.6rem;
-  }
-  @media (max-width: 980px) {
-    .figure {
-      position: static;
-      max-width: 30rem;
-    }
+  .stage img {
+    width: 100%;
+    height: 72vh;
+    object-fit: cover;
+    object-position: 50% 22%;
   }
   .foot {
     margin-top: 2.5rem;

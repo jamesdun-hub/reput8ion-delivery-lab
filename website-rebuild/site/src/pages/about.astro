@@ -8,6 +8,7 @@ import SampleTag from '../components/SampleTag.astro';
   description="The practice: narrative, issues management, communications training and reputation counsel, underwritten by three decades of crisis experience."
 >
   <section class="band--dark page-head">
+    <span class="ghost-num">A</span>
     <div class="container">
       <p class="eyebrow">About</p>
       <h1>The judgement has been tested.</h1>
@@ -16,7 +17,7 @@ import SampleTag from '../components/SampleTag.astro';
 
   <section class="band">
     <div class="container--narrow">
-      <article class="prose">
+      <article class="prose reveal">
         <SampleTag label="Sample structure and register. Final copy is James with Opus assist, 500 to 700 words" />
 
         <p class="lead">
@@ -69,9 +70,6 @@ import SampleTag from '../components/SampleTag.astro';
 </Base>
 
 <style>
-  .page-head {
-    padding-block: clamp(3rem, 6vw, 5rem);
-  }
   .prose .lead {
     color: var(--ink);
   }

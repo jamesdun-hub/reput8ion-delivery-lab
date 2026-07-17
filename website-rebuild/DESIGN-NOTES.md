@@ -1,4 +1,42 @@
-# Design revision, 17 July 2026
+# Design revision v3, 17 July 2026: cinematic
+
+James pushed further: "more dynamic - with strong visuals. Think a
+production company." He approved, by direct choice, the full cinematic
+hero with the headline set over the darkened portrait, breaking brief
+section 13's text-over-photograph ban, and full CSS motion.
+
+## v3 changes
+
+- Full-viewport hero: the portrait fills the first screen under a dark
+  scrim with the headline, tagline and credential line set over it
+- Practice-area ticker strip under the hero, pure CSS marquee
+- Scroll reveals on sections and rows via CSS scroll-driven animations,
+  no JavaScript, off automatically for reduced-motion users
+- Navigation fixed over the imagery, transparent at the top of the page
+  and condensing to dark glass on scroll
+- Problem entries as full-width rows that invert to dark on hover, with
+  outlined numerals
+- Giant ghosted numerals and letters behind section headings, and an
+  outlined display wordmark across the footer
+- The speaking frame runs full-bleed at up to 72vh on the training entry
+- Both photographs carry a consistent cold teal cast applied in CSS
+
+## Additional brief deviations in v3, all James-approved
+
+| Brief rule | Status |
+|---|---|
+| Text never laid over a photograph (section 13) | Broken deliberately in the hero, at James's explicit choice |
+| No scroll-triggered animation (section 9.3) | Scroll reveals and the ticker added. Reduced-motion users see a still page |
+| Images uncropped, never as background (section 4.5) | The hero and the speaking band crop with object-fit cover |
+| Black and white, one grade (section 4.5) | A uniform teal cast now sits over both frames |
+
+Still honoured: exactly two photographs, no stock, no AI imagery, zero
+client-side JavaScript, the copy register, placeholder gating and every
+structural rule.
+
+---
+
+# Design revision v2, 17 July 2026
 
 James reviewed the first build and rejected the minimal treatment as too
 basic. This revision moves the site to a darker, more finished editorial
