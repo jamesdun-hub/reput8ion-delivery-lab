@@ -1,0 +1,353 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import LogoGrid from '../components/LogoGrid.astro';
+import Endorsement from '../components/Endorsement.astro';
+import SampleTag from '../components/SampleTag.astro';
+
+const problems = (await getCollection('problems')).sort(
+  (a, b) => a.data.order - b.data.order
+);
+const notes = (await getCollection('notes'))
+  .filter((n) => !n.data.draft)
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+const latest = notes[0];
+
+const dateFmt = new Intl.DateTimeFormat('en-IE', {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+});
+const pad = (n: number) => String(n).padStart(2, '0');
+
+const practice = [
+  'Narrative',
+  'Issues management',
+  'Communications training',
+  'Corporate strategy',
+  'Reputation counsel',
+  'Crisis',
+];
+---
+
+<Base
+  title="Reput8ion Dynamics. Senior counsel for leaders when reputation is on the line"
+  description="Senior counsel for leaders when reputation is on the line. Narrative, issues management, communications training and reputation counsel, led directly by James Dunny."
+>
+  <section class="hero cine">
+    <picture class="hero-media">
+      <source
+        type="image/webp"
+        srcset="/images/jd-portrait-768.webp 768w, /images/jd-portrait-1280.webp 1280w, /images/jd-portrait-2048.webp 2048w"
+        sizes="100vw"
+      />
+      <img
+        src="/images/jd-portrait-2048.jpg"
+        srcset="/images/jd-portrait-768.jpg 768w, /images/jd-portrait-1280.jpg 1280w, /images/jd-portrait-2048.jpg 2048w"
+        sizes="100vw"
+        alt="James Dunny"
+        width="2048"
+        height="1365"
+        loading="eager"
+        decoding="async"
+      />
+    </picture>
+    <div class="hero-scrim" aria-hidden="true"></div>
+    <div class="container hero-content">
+      <p class="eyebrow">The practice</p>
+      <div data-placeholder>
+        <SampleTag label="Positioning statement. Written by James, not the build" />
+        <h1 class="placeholder-block">
+          Names what the practice fixes, for whom and when it matters.
+        </h1>
+      </div>
+      <p class="tagline">Senior counsel for leaders when reputation is on the line.</p>
+      <p class="meta credential">
+        30 years &nbsp;·&nbsp; External Communications Director, Kerry Group
+        &nbsp;·&nbsp; Head of Crisis Management EMEA, FleishmanHillard
+        &nbsp;·&nbsp; Fellow of the PRII
+      </p>
+      <p class="cta">
+        <a class="btn" href="/problems">The problems we fix <span class="arrow">&rarr;</span></a>
+      </p>
+    </div>
+    <div class="scroll-cue" aria-hidden="true">&darr;</div>
+  </section>
+
+  <div class="ticker" aria-hidden="true">
+    <div class="ticker-track">
+      {practice.map((p) => <span>{p}</span>)}
+      {practice.map((p) => <span>{p}</span>)}
+    </div>
+  </div>
+
+  <section class="band reveal">
+    <span class="ghost-num">01</span>
+    <div class="container">
+      <p class="eyebrow">What we are asked to fix</p>
+      <ol class="problem-rows">
+        {
+          problems.map((p, i) => (
+            <li class="reveal">
+              <a href={`/problems/${p.id}`}>
+                <span class="num">{pad(i + 1)}</span>
+                <span class="body">
+                  <span class="p-title">{p.data.title}</span>
+                  <span class="p-summary">{p.data.summary}</span>
+                </span>
+                <span class="arrow" aria-hidden="true">&rarr;</span>
+              </a>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </section>
+
+  <section class="band band--tint reveal">
+    <span class="ghost-num">02</span>
+    <div class="container split">
+      <div>
+        <p class="eyebrow">Clients</p>
+        <LogoGrid />
+      </div>
+      <div>
+        <p class="eyebrow">In the room</p>
+        <Endorsement placement="home" />
+      </div>
+    </div>
+  </section>
+
+  <section class="band reveal">
+    <span class="ghost-num">03</span>
+    <div class="container split">
+      {
+        latest && (
+          <div>
+            <p class="eyebrow">Latest note</p>
+            <p class="meta">{dateFmt.format(latest.data.date)}</p>
+            <h2 class="note-title">
+              <a href={`/notes/${latest.id}`}>{latest.data.title}</a>
+            </h2>
+            <p class="standfirst">{latest.data.standfirst}</p>
+            <p class="all-notes">
+              <a href="/notes">All notes <span class="arrow">&rarr;</span></a>
+            </p>
+          </div>
+        )
+      }
+      <div>
+        <p class="eyebrow">Discretion</p>
+        <p data-placeholder>
+          <SampleTag label="Discretion line. One sentence, written by James" />
+          <span class="placeholder-block discretion"
+            >Named clients where permitted, silence where not.</span
+          >
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="band band--dark contact-band reveal">
+    <span class="ghost-num">04</span>
+    <div class="container">
+      <p class="eyebrow">Contact</p>
+      <p class="contact-line">
+        <a href="mailto:james@reput8ion.ie">james@reput8ion.ie</a>
+      </p>
+      <p class="contact-line">
+        <a href="tel:+353863883903">+353 86 388 3903</a>
+      </p>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .hero {
+    position: relative;
+    min-height: 100svh;
+    display: flex;
+    align-items: flex-end;
+    color: var(--on-dark);
+    background: var(--dark);
+    overflow: hidden;
+  }
+  .hero-media {
+    position: absolute;
+    inset: 0;
+  }
+  .hero-media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 58% 22%;
+  }
+  .hero-scrim {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background:
+      linear-gradient(to top, rgba(8, 12, 14, 0.94) 0%, rgba(8, 12, 14, 0.55) 45%, rgba(8, 12, 14, 0.3) 100%),
+      linear-gradient(100deg, rgba(8, 12, 14, 0.75) 0%, rgba(8, 12, 14, 0.15) 60%);
+  }
+  .hero-content {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    padding-bottom: clamp(4rem, 9vh, 7rem);
+    padding-top: calc(var(--nav-h) + 2rem);
+  }
+  .hero-content h1 {
+    font-size: clamp(2.4rem, 1.4rem + 4.5vw, 5.8rem);
+    max-width: 15ch;
+    text-shadow: 0 2px 24px rgba(0, 0, 0, 0.35);
+  }
+  .tagline {
+    margin-top: 1.6rem;
+    font-size: clamp(1.15rem, 1rem + 0.8vw, 1.5rem);
+    font-style: italic;
+    color: var(--on-dark);
+    max-width: 34ch;
+  }
+  .credential {
+    margin-top: 1.4rem;
+    line-height: 1.9;
+    color: var(--on-dark-muted);
+  }
+  .cta {
+    margin-top: 2.4rem;
+  }
+  .hero .btn {
+    color: var(--on-dark);
+  }
+  .scroll-cue {
+    position: absolute;
+    z-index: 2;
+    bottom: 1.4rem;
+    right: var(--pad);
+    font-family: var(--sans);
+    font-size: 1.3rem;
+    color: var(--accent);
+    animation: cue 2.2s ease-in-out infinite;
+  }
+  @keyframes cue {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(0.5rem);
+    }
+  }
+
+  .problem-rows {
+    list-style: none;
+    border-top: 1px solid var(--hairline);
+  }
+  .problem-rows a {
+    display: grid;
+    grid-template-columns: clamp(3.5rem, 8vw, 6.5rem) 1fr auto;
+    align-items: center;
+    gap: clamp(1rem, 3vw, 2.5rem);
+    padding: clamp(1.6rem, 3vw, 2.4rem) clamp(0.75rem, 2vw, 1.75rem);
+    border-bottom: 1px solid var(--hairline);
+    color: var(--ink);
+    background-image: none;
+    transition: background 0.22s ease, color 0.22s ease;
+  }
+  .problem-rows a:hover {
+    background: var(--dark);
+    color: var(--on-dark);
+  }
+  .num {
+    font-family: var(--sans);
+    font-size: clamp(1.3rem, 2.5vw, 2rem);
+    font-weight: 700;
+    color: transparent;
+    -webkit-text-stroke: 1px var(--teal-deep);
+    transition: color 0.22s ease;
+  }
+  .problem-rows a:hover .num {
+    color: var(--accent);
+    -webkit-text-stroke-color: var(--accent);
+  }
+  .p-title {
+    display: block;
+    font-size: clamp(1.35rem, 1.1rem + 1.4vw, 2.1rem);
+    font-weight: 600;
+    line-height: 1.15;
+    letter-spacing: -0.015em;
+  }
+  .p-summary {
+    display: block;
+    margin-top: 0.45rem;
+    font-size: 0.95em;
+    color: var(--ink-soft);
+    max-width: 58ch;
+    transition: color 0.22s ease;
+  }
+  .problem-rows a:hover .p-summary {
+    color: var(--on-dark-muted);
+  }
+  .problem-rows .arrow {
+    font-size: 1.5rem;
+    color: var(--teal-deep);
+    transition: transform 0.22s ease, color 0.22s ease;
+  }
+  .problem-rows a:hover .arrow {
+    transform: translateX(6px);
+    color: var(--accent);
+  }
+
+  .split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(2.5rem, 6vw, 5rem);
+    align-items: start;
+  }
+  @media (max-width: 820px) {
+    .split {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .note-title {
+    margin-top: 0.7rem;
+    max-width: 20ch;
+  }
+  .note-title a {
+    color: var(--ink);
+    background-image: none;
+  }
+  .note-title a:hover {
+    color: var(--teal-deep);
+  }
+  .standfirst {
+    margin-top: 0.9rem;
+    color: var(--ink-soft);
+    max-width: 50ch;
+  }
+  .all-notes {
+    margin-top: 1.4rem;
+  }
+  .all-notes .arrow {
+    display: inline-block;
+    transition: transform 0.18s ease;
+  }
+  .all-notes a:hover .arrow {
+    transform: translateX(5px);
+  }
+  .discretion {
+    font-size: 1.15em;
+    font-style: italic;
+  }
+
+  .contact-band .contact-line {
+    font-size: clamp(1.7rem, 1rem + 3.4vw, 3.6rem);
+    font-weight: 600;
+    line-height: 1.45;
+    letter-spacing: -0.02em;
+  }
+  .contact-band .contact-line a {
+    background-image: none;
+  }
+</style>

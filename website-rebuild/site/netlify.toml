@@ -1,0 +1,26 @@
+# Redirects per brief section 10. Host-level, permanent.
+# The blog slug map grows entry by entry as pieces are carried over.
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[[redirects]]
+  from = "/services"
+  to = "/problems"
+  status = 301
+
+[[redirects]]
+  from = "/radical-clarity"
+  to = "/problems"
+  status = 301
+
+[[redirects]]
+  from = "/blog"
+  to = "/notes"
+  status = 301
+
+[[redirects]]
+  from = "/blog/*"
+  to = "/notes/:splat"
+  status = 301

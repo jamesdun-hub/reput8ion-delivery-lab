@@ -1,0 +1,117 @@
+---
+const items = [
+  { href: '/problems', label: 'Problems' },
+  { href: '/about', label: 'About' },
+  { href: '/notes', label: 'Notes' },
+  { href: '/contact', label: 'Contact' },
+];
+const path = Astro.url.pathname;
+---
+
+<header>
+  <div class="container bar">
+    <a class="wordmark" href="/">Reput8ion <span>Dynamics</span></a>
+    <nav aria-label="Main">
+      <ul>
+        {
+          items.map((item) => (
+            <li>
+              <a
+                href={item.href}
+                aria-current={path.startsWith(item.href) ? 'page' : undefined}
+              >
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<style>
+  header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    background: rgba(12, 18, 20, 0.72);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--hairline-dark);
+  }
+  /* Starts transparent over the imagery, condenses to glass as you scroll */
+  @supports (animation-timeline: scroll()) {
+    @media (prefers-reduced-motion: no-preference) {
+      header {
+        animation: navglass linear both;
+        animation-timeline: scroll();
+        animation-range: 0 240px;
+      }
+      @keyframes navglass {
+        from {
+          background: rgba(12, 18, 20, 0);
+          border-bottom-color: transparent;
+          backdrop-filter: blur(0);
+          -webkit-backdrop-filter: blur(0);
+        }
+        to {
+          background: rgba(12, 18, 20, 0.72);
+          border-bottom-color: var(--hairline-dark);
+          backdrop-filter: blur(14px);
+          -webkit-backdrop-filter: blur(14px);
+        }
+      }
+    }
+  }
+  .bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem 2rem;
+    min-height: var(--nav-h);
+    flex-wrap: wrap;
+    padding-block: 0.6rem;
+  }
+  .wordmark {
+    /* Text stand-in for wordmark.svg. The brand SVG drops in here unchanged. */
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 1.02rem;
+    letter-spacing: 0.01em;
+    color: #fff;
+    background-image: none;
+  }
+  .wordmark span {
+    color: var(--accent);
+  }
+  .wordmark:hover span {
+    color: #fff;
+  }
+  ul {
+    display: flex;
+    gap: clamp(1.1rem, 3vw, 2.2rem);
+    list-style: none;
+  }
+  nav a {
+    font-family: var(--sans);
+    font-size: 0.82rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--on-dark-muted);
+    background-image: none;
+    padding-block: 0.4rem;
+    border-bottom: 1px solid transparent;
+    transition: color 0.18s ease, border-color 0.18s ease;
+  }
+  nav a:hover {
+    color: #fff;
+  }
+  nav a[aria-current='page'] {
+    color: #fff;
+    border-bottom-color: var(--accent);
+  }
+</style>

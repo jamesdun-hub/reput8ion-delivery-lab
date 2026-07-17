@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://reput8ion.ie/sitemap-index.xml

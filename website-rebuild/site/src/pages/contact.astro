@@ -1,0 +1,48 @@
+---
+import Base from '../layouts/Base.astro';
+import SampleTag from '../components/SampleTag.astro';
+---
+
+<Base
+  title="Contact. Reput8ion Dynamics"
+  description="Talk to us directly. Email james@reput8ion.ie or call +353 86 388 3903. Dublin and Kildare."
+>
+  <section class="band--dark page-head">
+    <span class="ghost-num">C</span>
+    <div class="container">
+      <p class="eyebrow">Contact</p>
+      <h1>Talk to us.</h1>
+      <p class="direct">
+        <a href="mailto:james@reput8ion.ie">james@reput8ion.ie</a>
+      </p>
+      <p class="direct">
+        <a href="tel:+353863883903">+353 86 388 3903</a>
+      </p>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="container--narrow prose">
+      <p data-placeholder>
+        <SampleTag label="Response expectation. One line, set by James, then kept" />
+        <span class="placeholder-block">We reply the same working day.</span>
+      </p>
+      <p>Based in Dublin and Kildare. We work wherever the problem is.</p>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .direct {
+    font-size: clamp(1.7rem, 1rem + 3.4vw, 3.6rem);
+    font-weight: 600;
+    line-height: 1.5;
+    letter-spacing: -0.02em;
+  }
+  .direct:first-of-type {
+    margin-top: 2rem;
+  }
+  .direct a {
+    background-image: none;
+  }
+</style>

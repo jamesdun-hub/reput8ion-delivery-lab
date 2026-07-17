@@ -1,0 +1,32 @@
+---
+// One of the two photographs, served as webp with jpg fallback.
+// No hover effects, no zoom, no lightbox, no captions, no text laid over.
+interface Props {
+  name: 'jd-portrait' | 'jd-speaking';
+  alt: string;
+  widths: number[];
+  sizes: string;
+  width: number;
+  height: number;
+  loading?: 'eager' | 'lazy';
+}
+const { name, alt, widths, sizes, width, height, loading = 'lazy' } = Astro.props;
+
+const srcset = (ext: string) =>
+  widths.map((w) => `/images/${name}-${w}.${ext} ${w}w`).join(', ');
+const largest = Math.max(...widths);
+---
+
+<picture>
+  <source type="image/webp" srcset={srcset('webp')} sizes={sizes} />
+  <img
+    src={`/images/${name}-${largest}.jpg`}
+    srcset={srcset('jpg')}
+    sizes={sizes}
+    alt={alt}
+    width={width}
+    height={height}
+    loading={loading}
+    decoding="async"
+  />
+</picture>

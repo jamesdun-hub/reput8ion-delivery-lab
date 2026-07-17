@@ -1,0 +1,91 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import SampleTag from '../../components/SampleTag.astro';
+import samples from '../../data/samples.json';
+
+export async function getStaticPaths() {
+  const problems = await getCollection('problems');
+  return problems.map((p) => ({ params: { slug: p.id }, props: { entry: p } }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+const isSample = samples.problems.includes(entry.id);
+const isCarriedOver = samples.carriedOver.includes(entry.id);
+const showSpeakingFrame = entry.id === 'senior-people-message';
+const all = (await getCollection('problems')).sort((a, b) => a.data.order - b.data.order);
+const index = all.findIndex((p) => p.id === entry.id);
+const pad = (n: number) => String(n).padStart(2, '0');
+---
+
+<Base
+  title={`${entry.data.title}. Reput8ion Dynamics`}
+  description={entry.data.summary}
+>
+  <section class="band--dark page-head">
+    <span class="ghost-num">{pad(index + 1)}</span>
+    <div class="container">
+      <p class="eyebrow">Problem {pad(index + 1)}</p>
+      {isSample && <SampleTag label="Sample entry showing shape and register. James writes the final copy" />}
+      {isCarriedOver && <SampleTag label="Carried over from the current site. James to confirm" />}
+      <h1>{entry.data.title}</h1>
+    </div>
+  </section>
+
+  {
+    showSpeakingFrame && (
+      <div class="stage cine">
+        <picture>
+          <source
+            type="image/webp"
+            srcset="/images/jd-speaking-640.webp 640w, /images/jd-speaking-960.webp 960w, /images/jd-speaking-1262.webp 1262w"
+            sizes="100vw"
+          />
+          <img
+            src="/images/jd-speaking-1262.jpg"
+            srcset="/images/jd-speaking-640.jpg 640w, /images/jd-speaking-960.jpg 960w, /images/jd-speaking-1262.jpg 1262w"
+            sizes="100vw"
+            alt="James Dunny on a conference panel"
+            width="1262"
+            height="1600"
+            loading="lazy"
+            decoding="async"
+          />
+        </picture>
+      </div>
+    )
+  }
+
+  <section class="band">
+    <div class="container--narrow">
+      <article class="prose reveal">
+        <Content />
+        <p class="foot">
+          If this is the conversation happening in your organisation, <a href="/contact">talk to us</a>.
+        </p>
+      </article>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .stage {
+    max-height: 72vh;
+    max-width: 100rem;
+    margin-inline: auto;
+    overflow: hidden;
+    background: var(--dark);
+  }
+  .stage img {
+    width: 100%;
+    height: 72vh;
+    object-fit: cover;
+    object-position: 50% 22%;
+  }
+  .foot {
+    margin-top: 2.5rem;
+    padding-top: 1.6rem;
+    border-top: 1px solid var(--hairline);
+  }
+</style>

@@ -1,0 +1,103 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+
+const notes = (await getCollection('notes'))
+  .filter((n) => !n.data.draft)
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+
+const dateFmt = new Intl.DateTimeFormat('en-IE', {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+});
+---
+
+<Base
+  title="Notes. Reput8ion Dynamics"
+  description="Published thinking on reputation, narrative, issues management and counsel under pressure."
+>
+  <section class="band--dark page-head">
+    <span class="ghost-num">N</span>
+    <div class="container">
+      <p class="eyebrow">Notes</p>
+      <h1>Published thinking.</h1>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="container">
+      <ol class="stream">
+        {
+          notes.map((n) => (
+            <li class="reveal">
+              <a href={`/notes/${n.id}`}>
+                <span class="date meta">{dateFmt.format(n.data.date)}</span>
+                <span class="body">
+                  <span class="title">{n.data.title} <span class="arrow">&rarr;</span></span>
+                  <span class="standfirst">{n.data.standfirst}</span>
+                </span>
+              </a>
+            </li>
+          ))
+        }
+      </ol>
+      <p class="rss small">
+        Journalists: there is an <a href="/rss.xml">RSS feed</a>.
+      </p>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .stream {
+    list-style: none;
+    border-top: 1px solid var(--hairline);
+  }
+  .stream a {
+    display: grid;
+    grid-template-columns: 11rem 1fr;
+    gap: 1rem;
+    padding: 1.9rem clamp(0.5rem, 2vw, 1.5rem);
+    border-bottom: 1px solid var(--hairline);
+    color: var(--ink);
+    background-image: none;
+    transition: background 0.18s ease;
+  }
+  @media (max-width: 720px) {
+    .stream a {
+      grid-template-columns: 1fr;
+      gap: 0.4rem;
+    }
+  }
+  .stream a:hover {
+    background: var(--paper-tint);
+  }
+  .date {
+    padding-top: 0.45rem;
+  }
+  .title {
+    display: block;
+    font-size: clamp(1.4rem, 1.1rem + 1.4vw, 2.1rem);
+    font-weight: 600;
+    line-height: 1.15;
+    letter-spacing: -0.015em;
+  }
+  .title .arrow {
+    display: inline-block;
+    color: var(--teal-deep);
+    transition: transform 0.18s ease;
+  }
+  .stream a:hover .arrow {
+    transform: translateX(5px);
+  }
+  .standfirst {
+    display: block;
+    margin-top: 0.5rem;
+    color: var(--ink-soft);
+    max-width: 62ch;
+  }
+  .rss {
+    margin-top: 2.5rem;
+  }
+</style>

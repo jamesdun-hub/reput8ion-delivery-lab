@@ -1,0 +1,101 @@
+---
+const year = new Date().getFullYear();
+---
+
+<footer class="band--dark">
+  <div class="container grid">
+    <div>
+      <p class="wordmark">Reput8ion <span>Dynamics</span></p>
+      <p class="tagline">Senior counsel for leaders when reputation is on the line.</p>
+    </div>
+    <div>
+      <p class="label">Direct</p>
+      <p><a href="mailto:james@reput8ion.ie">james@reput8ion.ie</a></p>
+      <p><a href="tel:+353863883903">+353 86 388 3903</a></p>
+      <p><a href="https://www.linkedin.com/company/reput8iondynamics" rel="noopener">LinkedIn</a></p>
+    </div>
+    <div>
+      <p class="label">Site</p>
+      <p><a href="/problems">Problems</a></p>
+      <p><a href="/about">About</a></p>
+      <p><a href="/notes">Notes</a></p>
+      <p><a href="/contact">Contact</a></p>
+    </div>
+  </div>
+  <div class="container giant" aria-hidden="true">Reput8ion Dynamics</div>
+  <div class="container bottom">
+    <p class="small">
+      &copy; {year} Reput8ion Dynamics · Dublin and Kildare ·
+      <a href="/ai-use">How we use AI</a> · <a href="/rss.xml">RSS</a>
+    </p>
+  </div>
+</footer>
+
+<style>
+  footer {
+    padding-block: clamp(3rem, 6vw, 4.5rem) 1.75rem;
+    border-top: 1px solid var(--hairline-dark);
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 2.5rem;
+  }
+  @media (max-width: 720px) {
+    .grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  .wordmark {
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 1.05rem;
+    color: #fff;
+  }
+  .wordmark span {
+    color: var(--accent);
+  }
+  .tagline {
+    margin-top: 0.8rem;
+    font-style: italic;
+    color: var(--on-dark-muted);
+    max-width: 30ch;
+  }
+  .label {
+    font-family: var(--sans);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--on-dark-muted);
+    margin-bottom: 0.9rem;
+  }
+  .grid p + p {
+    margin-top: 0.45rem;
+  }
+  .grid a {
+    color: var(--on-dark);
+    background-image: none;
+  }
+  .grid a:hover {
+    color: var(--accent);
+  }
+  .giant {
+    margin-top: 3.5rem;
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: clamp(2.6rem, 8.5vw, 8rem);
+    line-height: 1;
+    letter-spacing: -0.03em;
+    white-space: nowrap;
+    color: transparent;
+    -webkit-text-stroke: 1.5px rgba(12, 192, 223, 0.18);
+    user-select: none;
+    overflow: hidden;
+  }
+  .bottom {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--hairline-dark);
+  }
+</style>
