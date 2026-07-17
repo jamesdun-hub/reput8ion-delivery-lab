@@ -8,65 +8,84 @@ const items = [
 const path = Astro.url.pathname;
 ---
 
-<header class="wrap">
-  <nav aria-label="Main">
-    <a class="wordmark" href="/">Reput8ion Dynamics</a>
-    <ul>
-      {
-        items.map((item) => (
-          <li>
-            <a
-              href={item.href}
-              aria-current={path.startsWith(item.href) ? 'page' : undefined}
-            >
-              {item.label}
-            </a>
-          </li>
-        ))
-      }
-    </ul>
-  </nav>
+<header>
+  <div class="container bar">
+    <a class="wordmark" href="/">Reput8ion <span>Dynamics</span></a>
+    <nav aria-label="Main">
+      <ul>
+        {
+          items.map((item) => (
+            <li>
+              <a
+                href={item.href}
+                aria-current={path.startsWith(item.href) ? 'page' : undefined}
+              >
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+  </div>
 </header>
 
 <style>
   header {
-    padding-block: 1.4rem 1.1rem;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(12, 18, 20, 0.82);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--hairline-dark);
   }
-  nav {
+  .bar {
     display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: 0.75rem 2rem;
+    align-items: center;
     justify-content: space-between;
+    gap: 1rem 2rem;
+    min-height: 4.2rem;
+    flex-wrap: wrap;
+    padding-block: 0.6rem;
   }
   .wordmark {
     /* Text stand-in for wordmark.svg. The brand SVG drops in here unchanged. */
+    font-family: var(--sans);
     font-weight: 600;
-    font-size: 1.15rem;
-    letter-spacing: -0.01em;
-    color: var(--teal-deep);
-    text-decoration: none;
+    font-size: 1.02rem;
+    letter-spacing: 0.01em;
+    color: #fff;
+    background-image: none;
   }
-  .wordmark:hover {
+  .wordmark span {
     color: var(--accent);
+  }
+  .wordmark:hover span {
+    color: #fff;
   }
   ul {
     display: flex;
-    gap: 1.5rem;
+    gap: clamp(1.1rem, 3vw, 2.2rem);
     list-style: none;
   }
-  ul a {
-    color: var(--ink);
-    text-decoration: none;
-    font-size: 1rem;
+  nav a {
+    font-family: var(--sans);
+    font-size: 0.82rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--on-dark-muted);
+    background-image: none;
+    padding-block: 0.4rem;
+    border-bottom: 1px solid transparent;
+    transition: color 0.18s ease, border-color 0.18s ease;
   }
-  ul a:hover {
-    color: var(--teal-deep);
+  nav a:hover {
+    color: #fff;
   }
-  ul a[aria-current='page'] {
-    text-decoration: underline;
-    text-decoration-thickness: 1px;
-    text-underline-offset: 0.25em;
-    text-decoration-color: var(--teal-deep);
+  nav a[aria-current='page'] {
+    color: #fff;
+    border-bottom-color: var(--accent);
   }
 </style>

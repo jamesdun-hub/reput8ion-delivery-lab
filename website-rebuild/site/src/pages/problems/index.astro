@@ -5,50 +5,96 @@ import Base from '../../layouts/Base.astro';
 const problems = (await getCollection('problems')).sort(
   (a, b) => a.data.order - b.data.order
 );
+const pad = (n: number) => String(n).padStart(2, '0');
 ---
 
 <Base
   title="Problems. Reput8ion Dynamics"
   description="The problems we are asked to fix: narrative, issues with a long fuse, senior delivery, board alignment and the four-hour call."
 >
-  <h1>Problems</h1>
-  <p class="intro prose">
-    This is the work as clients describe it, not as a services menu describes
-    it. If one of these sounds like the conversation happening in your
-    organisation, start there.
-  </p>
-  <ul class="list">
-    {
-      problems.map((p) => (
-        <li>
-          <a href={`/problems/${p.id}`}>{p.data.title}</a>
-          <p>{p.data.summary}</p>
-        </li>
-      ))
-    }
-  </ul>
+  <section class="band--dark page-head">
+    <div class="container">
+      <p class="eyebrow">Problems</p>
+      <h1>The work, as clients describe it.</h1>
+      <p class="lead">
+        Not a services menu. If one of these sounds like the conversation
+        happening in your organisation, start there.
+      </p>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="container">
+      <ol class="list">
+        {
+          problems.map((p, i) => (
+            <li>
+              <a href={`/problems/${p.id}`}>
+                <span class="num">{pad(i + 1)}</span>
+                <span class="body">
+                  <span class="title">{p.data.title} <span class="arrow">&rarr;</span></span>
+                  <span class="summary">{p.data.summary}</span>
+                </span>
+              </a>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </section>
 </Base>
 
 <style>
-  h1 {
-    margin-top: 2rem;
+  .page-head {
+    padding-block: clamp(3rem, 6vw, 5rem);
   }
-  .intro {
-    margin-top: 1.25rem;
+  .page-head .lead {
+    margin-top: 1.2rem;
+    max-width: 52ch;
   }
   .list {
     list-style: none;
-    margin-top: 3rem;
-    max-width: var(--measure);
-  }
-  .list li + li {
-    margin-top: 2.2rem;
+    border-top: 1px solid var(--hairline);
   }
   .list a {
-    font-size: 1.35em;
-    font-weight: 600;
+    display: grid;
+    grid-template-columns: 4rem 1fr;
+    gap: 1rem;
+    padding: 2rem clamp(0.5rem, 2vw, 1.5rem);
+    border-bottom: 1px solid var(--hairline);
+    color: var(--ink);
+    background-image: none;
+    transition: background 0.18s ease;
   }
-  .list p {
-    margin-top: 0.3rem;
+  .list a:hover {
+    background: var(--paper-tint);
+  }
+  .num {
+    font-family: var(--sans);
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    color: var(--teal-deep);
+    padding-top: 0.5rem;
+  }
+  .title {
+    display: block;
+    font-size: 1.45em;
+    font-weight: 600;
+    line-height: 1.2;
+  }
+  .title .arrow {
+    display: inline-block;
+    color: var(--teal-deep);
+    transition: transform 0.18s ease;
+  }
+  .list a:hover .arrow {
+    transform: translateX(5px);
+  }
+  .summary {
+    display: block;
+    margin-top: 0.5rem;
+    color: var(--ink-soft);
+    max-width: 62ch;
   }
 </style>

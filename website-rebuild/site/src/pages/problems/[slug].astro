@@ -15,55 +15,86 @@ const { Content } = await render(entry);
 const isSample = samples.problems.includes(entry.id);
 const isCarriedOver = samples.carriedOver.includes(entry.id);
 const showSpeakingFrame = entry.id === 'senior-people-message';
+const all = (await getCollection('problems')).sort((a, b) => a.data.order - b.data.order);
+const index = all.findIndex((p) => p.id === entry.id);
+const pad = (n: number) => String(n).padStart(2, '0');
 ---
 
 <Base
   title={`${entry.data.title}. Reput8ion Dynamics`}
   description={entry.data.summary}
 >
-  <article>
-    {isSample && <SampleTag label="Sample entry showing shape and register. James writes the final copy" />}
-    {isCarriedOver && <SampleTag label="Carried over from the current site. James to confirm" />}
-    <h1>{entry.data.title}</h1>
-
-    {
-      showSpeakingFrame && (
-        <div class="figure">
-          <Frame
-            name="jd-speaking"
-            alt="James Dunny on a conference panel"
-            widths={[640, 960, 1262]}
-            sizes="(min-width: 800px) 720px, 100vw"
-            width={1262}
-            height={1600}
-          />
-        </div>
-      )
-    }
-
-    <div class="prose">
-      <Content />
+  <section class="band--dark page-head">
+    <div class="container">
+      <p class="eyebrow">Problem {pad(index + 1)}</p>
+      {isSample && <SampleTag label="Sample entry showing shape and register. James writes the final copy" />}
+      {isCarriedOver && <SampleTag label="Carried over from the current site. James to confirm" />}
+      <h1>{entry.data.title}</h1>
     </div>
+  </section>
 
-    <hr class="rule" />
-    <p class="prose">
-      If this is the conversation happening in your organisation, <a href="/contact">talk to us</a>.
-    </p>
-  </article>
+  <section class="band">
+    <div class="container layout">
+      <article class="prose">
+        <Content />
+        <p class="foot">
+          If this is the conversation happening in your organisation, <a href="/contact">talk to us</a>.
+        </p>
+      </article>
+      {
+        showSpeakingFrame && (
+          <aside class="figure">
+            <Frame
+              name="jd-speaking"
+              alt="James Dunny on a conference panel"
+              widths={[640, 960, 1262]}
+              sizes="(min-width: 980px) 26rem, 100vw"
+              width={1262}
+              height={1600}
+            />
+          </aside>
+        )
+      }
+    </div>
+  </section>
 </Base>
 
 <style>
-  article {
-    margin-top: 2rem;
+  .page-head {
+    padding-block: clamp(3rem, 6vw, 5rem);
   }
-  h1 {
-    max-width: 24ch;
+  .page-head h1 {
+    max-width: 18ch;
+  }
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: clamp(2.5rem, 5vw, 4.5rem);
+  }
+  .layout:has(.figure) {
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    align-items: start;
+  }
+  @media (max-width: 980px) {
+    .layout:has(.figure) {
+      grid-template-columns: 1fr;
+    }
   }
   .figure {
-    margin-block: 2.5rem;
-    max-width: 34rem;
+    position: sticky;
+    top: 6rem;
+    border: 1px solid var(--hairline);
+    padding: 0.6rem;
   }
-  .prose {
-    margin-top: 2rem;
+  @media (max-width: 980px) {
+    .figure {
+      position: static;
+      max-width: 30rem;
+    }
+  }
+  .foot {
+    margin-top: 2.5rem;
+    padding-top: 1.6rem;
+    border-top: 1px solid var(--hairline);
   }
 </style>

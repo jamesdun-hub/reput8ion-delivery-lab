@@ -17,40 +17,88 @@ const dateFmt = new Intl.DateTimeFormat('en-IE', {
   title="Notes. Reput8ion Dynamics"
   description="Published thinking on reputation, narrative, issues management and counsel under pressure."
 >
-  <h1>Notes</h1>
-  <ol class="stream">
-    {
-      notes.map((n) => (
-        <li>
-          <p class="small date">{dateFmt.format(n.data.date)}</p>
-          <a href={`/notes/${n.id}`}>{n.data.title}</a>
-          <p class="standfirst">{n.data.standfirst}</p>
-        </li>
-      ))
-    }
-  </ol>
+  <section class="band--dark page-head">
+    <div class="container">
+      <p class="eyebrow">Notes</p>
+      <h1>Published thinking.</h1>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="container">
+      <ol class="stream">
+        {
+          notes.map((n) => (
+            <li>
+              <a href={`/notes/${n.id}`}>
+                <span class="date meta">{dateFmt.format(n.data.date)}</span>
+                <span class="body">
+                  <span class="title">{n.data.title} <span class="arrow">&rarr;</span></span>
+                  <span class="standfirst">{n.data.standfirst}</span>
+                </span>
+              </a>
+            </li>
+          ))
+        }
+      </ol>
+      <p class="rss small">
+        Journalists: there is an <a href="/rss.xml">RSS feed</a>.
+      </p>
+    </div>
+  </section>
 </Base>
 
 <style>
-  h1 {
-    margin-top: 2rem;
+  .page-head {
+    padding-block: clamp(3rem, 6vw, 5rem);
   }
   .stream {
     list-style: none;
-    margin-top: 3rem;
-    max-width: var(--measure);
-  }
-  .stream li + li {
-    margin-top: 2.75rem;
+    border-top: 1px solid var(--hairline);
   }
   .stream a {
-    font-size: 1.35em;
-    font-weight: 600;
+    display: grid;
+    grid-template-columns: 11rem 1fr;
+    gap: 1rem;
+    padding: 1.9rem clamp(0.5rem, 2vw, 1.5rem);
+    border-bottom: 1px solid var(--hairline);
+    color: var(--ink);
+    background-image: none;
+    transition: background 0.18s ease;
+  }
+  @media (max-width: 720px) {
+    .stream a {
+      grid-template-columns: 1fr;
+      gap: 0.4rem;
+    }
+  }
+  .stream a:hover {
+    background: var(--paper-tint);
   }
   .date {
-    margin-bottom: 0.2rem;
+    padding-top: 0.45rem;
+  }
+  .title {
+    display: block;
+    font-size: 1.4em;
+    font-weight: 600;
+    line-height: 1.2;
+  }
+  .title .arrow {
+    display: inline-block;
+    color: var(--teal-deep);
+    transition: transform 0.18s ease;
+  }
+  .stream a:hover .arrow {
+    transform: translateX(5px);
   }
   .standfirst {
-    margin-top: 0.3rem;
+    display: block;
+    margin-top: 0.5rem;
+    color: var(--ink-soft);
+    max-width: 62ch;
+  }
+  .rss {
+    margin-top: 2.5rem;
   }
 </style>

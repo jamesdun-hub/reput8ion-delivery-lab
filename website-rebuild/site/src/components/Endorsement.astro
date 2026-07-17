@@ -15,9 +15,10 @@ const match = all.filter((e) => e.data.placement === placement);
   match.map((e) => (
     <blockquote>
       {e.id.startsWith('sample') && <SampleTag label="Sample endorsement. Three real ones to be sourced" />}
-      <p>{e.data.quote}</p>
-      <footer class="small">
-        {e.data.name}, {e.data.title}, {e.data.organisation}
+      <p class="quote">{e.data.quote}</p>
+      <footer>
+        <span class="name">{e.data.name}</span>
+        <span class="role">{e.data.title}, {e.data.organisation}</span>
       </footer>
     </blockquote>
   ))
@@ -25,16 +26,37 @@ const match = all.filter((e) => e.data.placement === placement);
 
 <style>
   blockquote {
-    border-left: 2px solid var(--teal-deep);
-    padding-left: 1.25rem;
+    position: relative;
     max-width: var(--measure);
   }
-  blockquote p {
-    font-size: 1.25em;
+  .quote {
+    font-size: 1.3em;
     line-height: 1.5;
     font-style: italic;
+    text-wrap: pretty;
   }
-  blockquote footer {
-    margin-top: 0.75rem;
+  .quote::before {
+    content: '\201C';
+    display: block;
+    font-size: 3.2em;
+    line-height: 0.6;
+    color: var(--teal-deep);
+    margin-bottom: 0.35em;
+  }
+  footer {
+    margin-top: 1.3rem;
+    display: grid;
+    gap: 0.15rem;
+  }
+  .name {
+    font-family: var(--sans);
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+  .role {
+    font-family: var(--sans);
+    font-size: 0.8rem;
+    color: var(--ink-soft);
   }
 </style>

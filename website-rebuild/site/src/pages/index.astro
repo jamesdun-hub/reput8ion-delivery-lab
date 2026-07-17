@@ -19,146 +19,272 @@ const dateFmt = new Intl.DateTimeFormat('en-IE', {
   month: 'long',
   year: 'numeric',
 });
+const pad = (n: number) => String(n).padStart(2, '0');
 ---
 
 <Base
   title="Reput8ion Dynamics. Senior counsel for leaders when reputation is on the line"
   description="Senior counsel for leaders when reputation is on the line. Narrative, issues management, communications training and reputation counsel, led directly by James Dunny."
 >
-  <div class="bleed hero">
-    <Frame
-      name="jd-portrait"
-      alt="James Dunny"
-      widths={[768, 1280, 2048]}
-      sizes="100vw"
-      width={2048}
-      height={1365}
-      loading="eager"
-    />
-  </div>
-
-  <section class="lede">
-    <div data-placeholder>
-      <SampleTag label="Positioning statement. Written by James, not the build" />
-      <h1 class="placeholder-block">
-        Names what the practice fixes, for whom and when it matters. Covers the
-        actual range, not just crisis. Specific enough that the wrong buyer
-        self-selects out.
-      </h1>
+  <section class="band--dark hero">
+    <div class="container hero-grid">
+      <div class="hero-copy">
+        <p class="eyebrow">The practice</p>
+        <div data-placeholder>
+          <SampleTag label="Positioning statement. Written by James, not the build" />
+          <h1 class="placeholder-block">
+            Names what the practice fixes, for whom and when it matters.
+            Covers the actual range, not just crisis.
+          </h1>
+        </div>
+        <p class="lead tagline">
+          Senior counsel for leaders when reputation is on the line.
+        </p>
+        <p class="meta credential">
+          30 years &nbsp;·&nbsp; External Communications Director, Kerry Group
+          &nbsp;·&nbsp; Head of Crisis Management EMEA, FleishmanHillard
+          &nbsp;·&nbsp; Fellow of the PRII
+        </p>
+        <p class="cta">
+          <a class="btn" href="/problems">The problems we fix <span class="arrow">&rarr;</span></a>
+        </p>
+      </div>
+      <div class="hero-frame">
+        <Frame
+          name="jd-portrait"
+          alt="James Dunny"
+          widths={[768, 1280, 2048]}
+          sizes="(min-width: 900px) 44vw, 100vw"
+          width={2048}
+          height={1365}
+          loading="eager"
+        />
+      </div>
     </div>
-    <p class="tagline">Senior counsel for leaders when reputation is on the line.</p>
-    <p class="small credential">
-      30 years. External Communications Director, Kerry Group. Head of Crisis
-      Management EMEA, FleishmanHillard. Fellow of the PRII.
-    </p>
   </section>
 
-  <hr class="rule" />
+  <section class="band">
+    <div class="container">
+      <p class="eyebrow">01 &nbsp;What we are asked to fix</p>
+      <ol class="problem-grid">
+        {
+          problems.map((p, i) => (
+            <li>
+              <a href={`/problems/${p.id}`}>
+                <span class="num">{pad(i + 1)}</span>
+                <span class="p-title">{p.data.title} <span class="arrow">&rarr;</span></span>
+                <span class="p-summary">{p.data.summary}</span>
+              </a>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </section>
 
-  <section class="section">
-    <h2>What we are asked to fix</h2>
-    <ul class="problems">
+  <section class="band band--tint">
+    <div class="container split">
+      <div>
+        <p class="eyebrow">02 &nbsp;Clients</p>
+        <LogoGrid />
+      </div>
+      <div>
+        <p class="eyebrow">03 &nbsp;In the room</p>
+        <Endorsement placement="home" />
+      </div>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="container split">
       {
-        problems.map((p) => (
-          <li>
-            <a href={`/problems/${p.id}`}>{p.data.title}</a>
-            <p class="small">{p.data.summary}</p>
-          </li>
-        ))
+        latest && (
+          <div>
+            <p class="eyebrow">04 &nbsp;Latest note</p>
+            <p class="meta">{dateFmt.format(latest.data.date)}</p>
+            <h2 class="note-title">
+              <a href={`/notes/${latest.id}`}>{latest.data.title}</a>
+            </h2>
+            <p class="standfirst">{latest.data.standfirst}</p>
+            <p class="all-notes">
+              <a href="/notes">All notes <span class="arrow">&rarr;</span></a>
+            </p>
+          </div>
+        )
       }
-    </ul>
-  </section>
-
-  <hr class="rule" />
-
-  <section class="section">
-    <h2>Clients</h2>
-    <LogoGrid />
-  </section>
-
-  <hr class="rule" />
-
-  <section class="section">
-    <Endorsement placement="home" />
-  </section>
-
-  <hr class="rule" />
-
-  {
-    latest && (
-      <section class="section">
-        <h2>Latest note</h2>
-        <p>
-          <a href={`/notes/${latest.id}`}>{latest.data.title}</a>
-          <br />
-          <span class="small">{dateFmt.format(latest.data.date)}</span>
+      <div>
+        <p class="eyebrow">05 &nbsp;Discretion</p>
+        <p data-placeholder>
+          <SampleTag label="Discretion line. One sentence, written by James" />
+          <span class="placeholder-block discretion"
+            >Named clients where permitted, silence where not.</span
+          >
         </p>
-        <p class="prose">{latest.data.standfirst}</p>
-        <p class="small">
-          <a href="/notes">All notes</a>
-        </p>
-      </section>
-    )
-  }
-
-  <hr class="rule" />
-
-  <section class="section prose">
-    <p data-placeholder>
-      <SampleTag label="Discretion line. One sentence, written by James" />
-      <span class="placeholder-block"
-        >Named clients where permitted, silence where not.</span
-      >
-    </p>
+      </div>
+    </div>
   </section>
 
-  <hr class="rule" />
-
-  <section class="section">
-    <h2>Contact</h2>
-    <p class="contact-lines">
-      <a href="mailto:james@reput8ion.ie">james@reput8ion.ie</a><br />
-      <a href="tel:+353863883903">+353 86 388 3903</a>
-    </p>
+  <section class="band--dark contact-band">
+    <div class="container">
+      <p class="eyebrow">06 &nbsp;Contact</p>
+      <p class="contact-line">
+        <a href="mailto:james@reput8ion.ie">james@reput8ion.ie</a>
+      </p>
+      <p class="contact-line">
+        <a href="tel:+353863883903">+353 86 388 3903</a>
+      </p>
+    </div>
   </section>
 </Base>
 
 <style>
   .hero {
-    margin-top: 0.5rem;
+    padding-block: clamp(2.5rem, 6vw, 5.5rem);
   }
-  .lede {
-    margin-top: 2.5rem;
-    max-width: var(--measure);
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.05fr;
+    gap: clamp(2rem, 5vw, 4.5rem);
+    align-items: center;
   }
-  .lede h1 {
-    font-size: clamp(1.7rem, 1.2rem + 2.2vw, 2.6rem);
+  @media (max-width: 900px) {
+    .hero-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  .hero-copy h1 {
+    font-size: clamp(2rem, 1.3rem + 2.8vw, 3.3rem);
   }
   .tagline {
-    margin-top: 1.5rem;
-    font-size: 1.3em;
+    margin-top: 1.6rem;
     font-style: italic;
-    color: var(--teal-forest);
   }
   .credential {
-    margin-top: 1rem;
+    margin-top: 1.4rem;
+    line-height: 1.9;
   }
-  .problems {
+  .cta {
+    margin-top: 2.2rem;
+  }
+  .hero-frame {
+    border: 1px solid var(--hairline-dark);
+    padding: 0.6rem;
+  }
+
+  .problem-grid {
     list-style: none;
-    max-width: var(--measure);
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0;
+    border-top: 1px solid var(--hairline);
   }
-  .problems li + li {
+  @media (max-width: 820px) {
+    .problem-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  .problem-grid li {
+    border-bottom: 1px solid var(--hairline);
+  }
+  .problem-grid li:nth-child(odd) {
+    border-right: 1px solid var(--hairline);
+  }
+  @media (max-width: 820px) {
+    .problem-grid li:nth-child(odd) {
+      border-right: 0;
+    }
+  }
+  .problem-grid a {
+    display: block;
+    padding: 1.9rem clamp(1rem, 3vw, 2.2rem);
+    color: var(--ink);
+    background-image: none;
+    transition: background 0.18s ease;
+  }
+  .problem-grid a:hover {
+    background: var(--paper-tint);
+  }
+  .num {
+    font-family: var(--sans);
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    color: var(--teal-deep);
+    display: block;
+  }
+  .p-title {
+    display: block;
+    margin-top: 0.55rem;
+    font-size: 1.28em;
+    font-weight: 600;
+    line-height: 1.25;
+  }
+  .p-title .arrow {
+    display: inline-block;
+    color: var(--teal-deep);
+    transition: transform 0.18s ease;
+  }
+  .problem-grid a:hover .p-title .arrow {
+    transform: translateX(5px);
+  }
+  .p-summary {
+    display: block;
+    margin-top: 0.55rem;
+    font-size: 0.95em;
+    color: var(--ink-soft);
+    max-width: 46ch;
+  }
+
+  .split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(2.5rem, 6vw, 5rem);
+    align-items: start;
+  }
+  @media (max-width: 820px) {
+    .split {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .note-title {
+    margin-top: 0.7rem;
+    max-width: 20ch;
+  }
+  .note-title a {
+    color: var(--ink);
+    background-image: none;
+  }
+  .note-title a:hover {
+    color: var(--teal-deep);
+  }
+  .standfirst {
+    margin-top: 0.9rem;
+    color: var(--ink-soft);
+    max-width: 50ch;
+  }
+  .all-notes {
     margin-top: 1.4rem;
   }
-  .problems a {
-    font-size: 1.2em;
+  .all-notes .arrow {
+    display: inline-block;
+    transition: transform 0.18s ease;
+  }
+  .all-notes a:hover .arrow {
+    transform: translateX(5px);
+  }
+  .discretion {
+    font-size: 1.15em;
+    font-style: italic;
+  }
+
+  .contact-band .contact-line {
+    font-size: clamp(1.5rem, 1.1rem + 2vw, 2.6rem);
     font-weight: 600;
+    line-height: 1.5;
+    letter-spacing: -0.01em;
   }
-  .problems p {
-    margin-top: 0.2rem;
-  }
-  .contact-lines {
-    font-size: 1.3em;
-    line-height: 1.9;
+  .contact-band .contact-line a {
+    background-image: none;
   }
 </style>

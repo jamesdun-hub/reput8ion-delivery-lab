@@ -1,15 +1,26 @@
-/* The type is the design. One serif, two weights, four teals used sparingly. */
+/* Editorial serif for reading, a quiet grotesk for the interface,
+   dark bands for depth, the teals used with intent. */
 
 :root {
-  --ink: #1c1c1c;
+  --ink: #14181a;
+  --ink-soft: #4b5559;
   --paper: #ffffff;
-  --muted: #5c5c5c;
-  --accent: #0cc0df;        /* wordmark only. Fails AA as text on white, never used for copy */
-  --teal-deep: #098da3;     /* large accents, hover states, the rule */
-  --teal-green: #359781;    /* reserved */
-  --teal-forest: #1b4c41;   /* links in running text. 9.7:1 on white */
-  --rule: 1px solid rgba(9, 141, 163, 0.4);
-  --measure: 66ch;
+  --paper-tint: #f6f8f8;
+  --dark: #0c1214;
+  --dark-2: #101b1e;
+  --on-dark: #eef3f2;
+  --on-dark-muted: #9db0ad;
+  --accent: #0cc0df;
+  --teal-deep: #098da3;
+  --teal-green: #359781;
+  --teal-forest: #1b4c41;
+  --hairline: rgba(20, 24, 26, 0.12);
+  --hairline-dark: rgba(238, 243, 242, 0.14);
+  --serif: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+  --sans: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  --measure: 64ch;
+  --container: 74rem;
+  --pad: clamp(1.25rem, 5vw, 3rem);
 }
 
 * {
@@ -19,62 +30,184 @@
 }
 
 html {
-  font-size: 100%;
+  scroll-behavior: smooth;
 }
 
 body {
-  font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif;
-  font-size: clamp(1.125rem, 1.05rem + 0.35vw, 1.25rem);
-  line-height: 1.65;
+  font-family: var(--serif);
+  font-size: clamp(1.1rem, 1.03rem + 0.3vw, 1.22rem);
+  line-height: 1.68;
   color: var(--ink);
   background: var(--paper);
   font-optical-sizing: auto;
+  -webkit-font-smoothing: antialiased;
 }
 
-.wrap {
-  max-width: 46rem;
+::selection {
+  background: rgba(12, 192, 223, 0.25);
+}
+
+/* Layout primitives ------------------------------------------------ */
+
+.container {
+  max-width: var(--container);
   margin-inline: auto;
-  padding-inline: 1.25rem;
+  padding-inline: var(--pad);
 }
 
-/* Prose measure. Images break the column, text does not. */
+.container--narrow {
+  max-width: 50rem;
+  margin-inline: auto;
+  padding-inline: var(--pad);
+}
+
+.band {
+  padding-block: clamp(3.5rem, 8vw, 6.5rem);
+}
+
+.band--dark {
+  background: linear-gradient(160deg, var(--dark) 0%, var(--dark-2) 100%);
+  color: var(--on-dark);
+}
+
+.band--tint {
+  background: var(--paper-tint);
+}
+
 .prose {
   max-width: var(--measure);
 }
 .prose > * + * {
-  margin-top: 1.1em;
+  margin-top: 1.15em;
 }
 .prose h2 {
-  margin-top: 2em;
+  margin-top: 2.2em;
+  padding-top: 1.4em;
+  border-top: 1px solid var(--hairline);
 }
+
+/* Type ------------------------------------------------------------- */
 
 h1, h2, h3 {
   font-weight: 600;
-  line-height: 1.15;
-  letter-spacing: -0.01em;
+  line-height: 1.08;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
 }
 h1 {
-  font-size: clamp(2.1rem, 1.4rem + 3vw, 3.4rem);
+  font-size: clamp(2.4rem, 1.6rem + 3.6vw, 4.2rem);
 }
 h2 {
-  font-size: clamp(1.45rem, 1.2rem + 1vw, 1.9rem);
+  font-size: clamp(1.55rem, 1.25rem + 1.2vw, 2.2rem);
 }
 h3 {
-  font-size: 1.2rem;
+  font-size: 1.25rem;
 }
+
+.eyebrow {
+  font-family: var(--sans);
+  font-size: 0.76rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--teal-deep);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.4rem;
+}
+.eyebrow::after {
+  content: '';
+  height: 1px;
+  width: 3rem;
+  background: var(--teal-deep);
+  opacity: 0.5;
+}
+.band--dark .eyebrow {
+  color: var(--accent);
+}
+.band--dark .eyebrow::after {
+  background: var(--accent);
+}
+
+.lead {
+  font-size: 1.22em;
+  line-height: 1.55;
+  color: var(--ink-soft);
+}
+.band--dark .lead {
+  color: var(--on-dark-muted);
+}
+
+.small {
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+}
+.band--dark .small {
+  color: var(--on-dark-muted);
+}
+
+.meta {
+  font-family: var(--sans);
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  color: var(--ink-soft);
+}
+.band--dark .meta {
+  color: var(--on-dark-muted);
+}
+
+/* Links ------------------------------------------------------------ */
 
 a {
   color: var(--teal-forest);
-  text-decoration: underline;
-  text-decoration-thickness: 1px;
-  text-underline-offset: 0.15em;
+  text-decoration: none;
+  background-image: linear-gradient(currentColor, currentColor);
+  background-size: 100% 1px;
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+  transition: color 0.18s ease, background-size 0.18s ease;
 }
 a:hover {
   color: var(--teal-deep);
 }
+.band--dark a {
+  color: var(--accent);
+}
+.band--dark a:hover {
+  color: var(--on-dark);
+}
 
-em {
-  font-style: italic;
+.btn {
+  font-family: var(--sans);
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.85rem 1.5rem;
+  border: 1px solid currentColor;
+  background-image: none;
+  transition: all 0.18s ease;
+}
+.btn:hover {
+  background: var(--teal-forest);
+  border-color: var(--teal-forest);
+  color: #fff;
+}
+.band--dark .btn:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--dark);
+}
+.btn .arrow {
+  transition: transform 0.18s ease;
+}
+.btn:hover .arrow {
+  transform: translateX(4px);
 }
 
 img {
@@ -83,72 +216,62 @@ img {
   display: block;
 }
 
-/* The single hairline rule. The only divider on the site. */
 .rule {
   border: 0;
-  border-top: var(--rule);
-  margin-block: 3.5rem;
-}
-
-/* Full-bleed image treatment. Home page only, once. */
-.bleed {
-  width: 100vw;
-  margin-left: calc(50% - 50vw);
-}
-.bleed img {
-  margin-inline: auto;
-  /* Cap at the portrait's true resolution until the original is sourced. Never upscale. */
-  max-width: 2048px;
-  width: 100%;
-}
-
-/* Section headings that sit quietly above their content */
-.section {
-  margin-block: 3.5rem;
-}
-.section > h2 {
-  margin-bottom: 1.25rem;
-}
-
-.small {
-  font-size: 0.9rem;
-  color: var(--muted);
+  border-top: 1px solid var(--hairline);
 }
 
 /* Sample and placeholder marking. Visible, machine-checkable, unshippable.
-   The launch check fails while data-placeholder exists in the build. */
+   The launch gate fails while data-placeholder exists in the build. */
 .sample-tag {
+  font-family: var(--sans);
   display: inline-block;
-  font-size: 0.72rem;
+  font-size: 0.66rem;
   font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #a03232;
-  border: 1px dashed #a03232;
-  padding: 0.1rem 0.45rem;
-  margin-bottom: 0.6rem;
+  color: #b4552d;
+  border: 1px dashed rgba(180, 85, 45, 0.6);
+  border-radius: 2px;
+  padding: 0.2rem 0.55rem;
+  margin-bottom: 0.9rem;
 }
 .placeholder-block {
   display: block;
-  color: var(--muted);
-  border-left: 2px dashed #a03232;
+  color: inherit;
+  opacity: 0.75;
+  border-left: 2px dashed rgba(180, 85, 45, 0.6);
   padding-left: 1rem;
   margin-top: 0.4rem;
 }
 
-/* Skip link for keyboard users */
 .skip {
   position: absolute;
   left: -999px;
 }
 .skip:focus {
-  position: static;
-  display: inline-block;
-  padding: 0.5rem;
+  position: fixed;
+  top: 0.5rem;
+  left: 0.5rem;
+  z-index: 100;
+  background: var(--paper);
+  color: var(--ink);
+  padding: 0.6rem 1rem;
 }
 
-@media (prefers-reduced-motion: no-preference) {
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
   html {
-    scroll-behavior: smooth;
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
   }
 }
