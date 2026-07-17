@@ -1,0 +1,56 @@
+---
+import SampleTag from './SampleTag.astro';
+import clientsData from '../data/clients.json';
+
+interface Client {
+  name: string;
+  logo: string;
+  cleared: boolean;
+}
+
+// The hard filter. Only individually cleared logos render, ever.
+const clients = clientsData as Client[];
+const cleared = clients.filter((c) => c.cleared === true);
+
+// Belt and braces: fail the build outright if the filter is ever bypassed.
+if (cleared.some((c) => c.cleared !== true)) {
+  throw new Error('Uncleared logo reached the grid. Build stopped.');
+}
+---
+
+{
+  cleared.length > 0 ? (
+    <ul class="logos">
+      {cleared.map((c) => (
+        <li>
+          <img src={c.logo} alt={c.name} loading="lazy" />
+        </li>
+      ))}
+    </ul>
+  ) : (
+    <p class="placeholder-block" data-placeholder>
+      <SampleTag label="Awaiting logo clearance" />
+      <br />
+      The client grid renders here once logos are cleared client by client and
+      marked cleared in clients.json. Greyscale, uniform weight, static.
+      Nothing shows until then.
+    </p>
+  )
+}
+
+<style>
+  .logos {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+    gap: 2.5rem 3rem;
+    align-items: center;
+  }
+  .logos img {
+    filter: grayscale(1);
+    opacity: 0.75;
+    max-height: 3rem;
+    width: auto;
+    margin-inline: auto;
+  }
+</style>

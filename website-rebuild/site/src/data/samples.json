@@ -1,0 +1,16 @@
+{
+  "_comment": "Content written to demonstrate layout and register. Every id listed here must be replaced or approved by James before launch. The launch gate (npm run check) fails while this list is non-empty.",
+  "notes": [
+    "five-answers-one-question",
+    "long-fuse-still-a-fuse",
+    "interview-was-won-earlier"
+  ],
+  "problems": [
+    "live-issue-long-fuse",
+    "senior-people-message",
+    "story-behind-strategy",
+    "board-executive-alignment",
+    "journalist-four-hours"
+  ],
+  "carriedOver": ["radical-clarity"]
+}

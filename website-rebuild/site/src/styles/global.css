@@ -1,0 +1,154 @@
+/* The type is the design. One serif, two weights, four teals used sparingly. */
+
+:root {
+  --ink: #1c1c1c;
+  --paper: #ffffff;
+  --muted: #5c5c5c;
+  --accent: #0cc0df;        /* wordmark only. Fails AA as text on white, never used for copy */
+  --teal-deep: #098da3;     /* large accents, hover states, the rule */
+  --teal-green: #359781;    /* reserved */
+  --teal-forest: #1b4c41;   /* links in running text. 9.7:1 on white */
+  --rule: 1px solid rgba(9, 141, 163, 0.4);
+  --measure: 66ch;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 100%;
+}
+
+body {
+  font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+  font-size: clamp(1.125rem, 1.05rem + 0.35vw, 1.25rem);
+  line-height: 1.65;
+  color: var(--ink);
+  background: var(--paper);
+  font-optical-sizing: auto;
+}
+
+.wrap {
+  max-width: 46rem;
+  margin-inline: auto;
+  padding-inline: 1.25rem;
+}
+
+/* Prose measure. Images break the column, text does not. */
+.prose {
+  max-width: var(--measure);
+}
+.prose > * + * {
+  margin-top: 1.1em;
+}
+.prose h2 {
+  margin-top: 2em;
+}
+
+h1, h2, h3 {
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+h1 {
+  font-size: clamp(2.1rem, 1.4rem + 3vw, 3.4rem);
+}
+h2 {
+  font-size: clamp(1.45rem, 1.2rem + 1vw, 1.9rem);
+}
+h3 {
+  font-size: 1.2rem;
+}
+
+a {
+  color: var(--teal-forest);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.15em;
+}
+a:hover {
+  color: var(--teal-deep);
+}
+
+em {
+  font-style: italic;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* The single hairline rule. The only divider on the site. */
+.rule {
+  border: 0;
+  border-top: var(--rule);
+  margin-block: 3.5rem;
+}
+
+/* Full-bleed image treatment. Home page only, once. */
+.bleed {
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+}
+.bleed img {
+  margin-inline: auto;
+  /* Cap at the portrait's true resolution until the original is sourced. Never upscale. */
+  max-width: 2048px;
+  width: 100%;
+}
+
+/* Section headings that sit quietly above their content */
+.section {
+  margin-block: 3.5rem;
+}
+.section > h2 {
+  margin-bottom: 1.25rem;
+}
+
+.small {
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+/* Sample and placeholder marking. Visible, machine-checkable, unshippable.
+   The launch check fails while data-placeholder exists in the build. */
+.sample-tag {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #a03232;
+  border: 1px dashed #a03232;
+  padding: 0.1rem 0.45rem;
+  margin-bottom: 0.6rem;
+}
+.placeholder-block {
+  display: block;
+  color: var(--muted);
+  border-left: 2px dashed #a03232;
+  padding-left: 1rem;
+  margin-top: 0.4rem;
+}
+
+/* Skip link for keyboard users */
+.skip {
+  position: absolute;
+  left: -999px;
+}
+.skip:focus {
+  position: static;
+  display: inline-block;
+  padding: 0.5rem;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}

@@ -1,0 +1,54 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+
+const problems = (await getCollection('problems')).sort(
+  (a, b) => a.data.order - b.data.order
+);
+---
+
+<Base
+  title="Problems. Reput8ion Dynamics"
+  description="The problems we are asked to fix: narrative, issues with a long fuse, senior delivery, board alignment and the four-hour call."
+>
+  <h1>Problems</h1>
+  <p class="intro prose">
+    This is the work as clients describe it, not as a services menu describes
+    it. If one of these sounds like the conversation happening in your
+    organisation, start there.
+  </p>
+  <ul class="list">
+    {
+      problems.map((p) => (
+        <li>
+          <a href={`/problems/${p.id}`}>{p.data.title}</a>
+          <p>{p.data.summary}</p>
+        </li>
+      ))
+    }
+  </ul>
+</Base>
+
+<style>
+  h1 {
+    margin-top: 2rem;
+  }
+  .intro {
+    margin-top: 1.25rem;
+  }
+  .list {
+    list-style: none;
+    margin-top: 3rem;
+    max-width: var(--measure);
+  }
+  .list li + li {
+    margin-top: 2.2rem;
+  }
+  .list a {
+    font-size: 1.35em;
+    font-weight: 600;
+  }
+  .list p {
+    margin-top: 0.3rem;
+  }
+</style>

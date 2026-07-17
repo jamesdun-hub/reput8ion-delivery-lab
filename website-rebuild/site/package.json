@@ -1,0 +1,22 @@
+{
+  "name": "reput8ion-website",
+  "version": "1.0.0",
+  "description": "Reput8ion Dynamics website. Astro, static, type-led.",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "node scripts/prepare-images.mjs && astro build",
+    "preview": "astro preview",
+    "check": "node scripts/check-register.mjs"
+  },
+  "dependencies": {
+    "@astrojs/rss": "^4.0.19",
+    "@astrojs/sitemap": "^3.7.3",
+    "@fontsource/source-serif-4": "^5.2.9",
+    "astro": "^7.1.1"
+  },
+  "devDependencies": {
+    "playwright-core": "^1.61.1",
+    "sharp": "^0.35.3"
+  },
+  "type": "module"
+}

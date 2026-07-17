@@ -1,0 +1,28 @@
+---
+import Base from '../layouts/Base.astro';
+import SampleTag from '../components/SampleTag.astro';
+---
+
+<Base
+  title="How we use AI. Reput8ion Dynamics"
+  description="Our policy on the use of AI in client work."
+>
+  <article class="prose">
+    <SampleTag label="Carried-over page. Paste the existing AI use policy here verbatim, em dashes stripped" />
+    <h1>How we use AI</h1>
+    <p class="placeholder-block" data-placeholder>
+      The AI use policy carries over from the current site as a discretion
+      signal. The existing text replaces this placeholder unchanged apart from
+      the house style pass.
+    </p>
+  </article>
+</Base>
+
+<style>
+  article {
+    margin-top: 2rem;
+  }
+  article h1 {
+    margin-bottom: 1.5rem;
+  }
+</style>

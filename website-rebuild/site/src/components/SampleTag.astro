@@ -1,0 +1,11 @@
+---
+// Marks copy that is not final. Visible on the page and machine-checkable:
+// the launch gate (npm run check) fails while any data-placeholder attribute
+// remains in the built HTML, so sample copy cannot ship by accident.
+interface Props {
+  label?: string;
+}
+const { label = 'Sample copy. James writes the final version' } = Astro.props;
+---
+
+<span class="sample-tag" data-placeholder>{label}</span>

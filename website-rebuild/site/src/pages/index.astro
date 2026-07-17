@@ -1,0 +1,164 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import Frame from '../components/Frame.astro';
+import LogoGrid from '../components/LogoGrid.astro';
+import Endorsement from '../components/Endorsement.astro';
+import SampleTag from '../components/SampleTag.astro';
+
+const problems = (await getCollection('problems')).sort(
+  (a, b) => a.data.order - b.data.order
+);
+const notes = (await getCollection('notes'))
+  .filter((n) => !n.data.draft)
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+const latest = notes[0];
+
+const dateFmt = new Intl.DateTimeFormat('en-IE', {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+});
+---
+
+<Base
+  title="Reput8ion Dynamics. Senior counsel for leaders when reputation is on the line"
+  description="Senior counsel for leaders when reputation is on the line. Narrative, issues management, communications training and reputation counsel, led directly by James Dunny."
+>
+  <div class="bleed hero">
+    <Frame
+      name="jd-portrait"
+      alt="James Dunny"
+      widths={[768, 1280, 2048]}
+      sizes="100vw"
+      width={2048}
+      height={1365}
+      loading="eager"
+    />
+  </div>
+
+  <section class="lede">
+    <div data-placeholder>
+      <SampleTag label="Positioning statement. Written by James, not the build" />
+      <h1 class="placeholder-block">
+        Names what the practice fixes, for whom and when it matters. Covers the
+        actual range, not just crisis. Specific enough that the wrong buyer
+        self-selects out.
+      </h1>
+    </div>
+    <p class="tagline">Senior counsel for leaders when reputation is on the line.</p>
+    <p class="small credential">
+      30 years. External Communications Director, Kerry Group. Head of Crisis
+      Management EMEA, FleishmanHillard. Fellow of the PRII.
+    </p>
+  </section>
+
+  <hr class="rule" />
+
+  <section class="section">
+    <h2>What we are asked to fix</h2>
+    <ul class="problems">
+      {
+        problems.map((p) => (
+          <li>
+            <a href={`/problems/${p.id}`}>{p.data.title}</a>
+            <p class="small">{p.data.summary}</p>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <hr class="rule" />
+
+  <section class="section">
+    <h2>Clients</h2>
+    <LogoGrid />
+  </section>
+
+  <hr class="rule" />
+
+  <section class="section">
+    <Endorsement placement="home" />
+  </section>
+
+  <hr class="rule" />
+
+  {
+    latest && (
+      <section class="section">
+        <h2>Latest note</h2>
+        <p>
+          <a href={`/notes/${latest.id}`}>{latest.data.title}</a>
+          <br />
+          <span class="small">{dateFmt.format(latest.data.date)}</span>
+        </p>
+        <p class="prose">{latest.data.standfirst}</p>
+        <p class="small">
+          <a href="/notes">All notes</a>
+        </p>
+      </section>
+    )
+  }
+
+  <hr class="rule" />
+
+  <section class="section prose">
+    <p data-placeholder>
+      <SampleTag label="Discretion line. One sentence, written by James" />
+      <span class="placeholder-block"
+        >Named clients where permitted, silence where not.</span
+      >
+    </p>
+  </section>
+
+  <hr class="rule" />
+
+  <section class="section">
+    <h2>Contact</h2>
+    <p class="contact-lines">
+      <a href="mailto:james@reput8ion.ie">james@reput8ion.ie</a><br />
+      <a href="tel:+353863883903">+353 86 388 3903</a>
+    </p>
+  </section>
+</Base>
+
+<style>
+  .hero {
+    margin-top: 0.5rem;
+  }
+  .lede {
+    margin-top: 2.5rem;
+    max-width: var(--measure);
+  }
+  .lede h1 {
+    font-size: clamp(1.7rem, 1.2rem + 2.2vw, 2.6rem);
+  }
+  .tagline {
+    margin-top: 1.5rem;
+    font-size: 1.3em;
+    font-style: italic;
+    color: var(--teal-forest);
+  }
+  .credential {
+    margin-top: 1rem;
+  }
+  .problems {
+    list-style: none;
+    max-width: var(--measure);
+  }
+  .problems li + li {
+    margin-top: 1.4rem;
+  }
+  .problems a {
+    font-size: 1.2em;
+    font-weight: 600;
+  }
+  .problems p {
+    margin-top: 0.2rem;
+  }
+  .contact-lines {
+    font-size: 1.3em;
+    line-height: 1.9;
+  }
+</style>

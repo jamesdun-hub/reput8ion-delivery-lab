@@ -1,0 +1,72 @@
+---
+const items = [
+  { href: '/problems', label: 'Problems' },
+  { href: '/about', label: 'About' },
+  { href: '/notes', label: 'Notes' },
+  { href: '/contact', label: 'Contact' },
+];
+const path = Astro.url.pathname;
+---
+
+<header class="wrap">
+  <nav aria-label="Main">
+    <a class="wordmark" href="/">Reput8ion Dynamics</a>
+    <ul>
+      {
+        items.map((item) => (
+          <li>
+            <a
+              href={item.href}
+              aria-current={path.startsWith(item.href) ? 'page' : undefined}
+            >
+              {item.label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </nav>
+</header>
+
+<style>
+  header {
+    padding-block: 1.4rem 1.1rem;
+  }
+  nav {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.75rem 2rem;
+    justify-content: space-between;
+  }
+  .wordmark {
+    /* Text stand-in for wordmark.svg. The brand SVG drops in here unchanged. */
+    font-weight: 600;
+    font-size: 1.15rem;
+    letter-spacing: -0.01em;
+    color: var(--teal-deep);
+    text-decoration: none;
+  }
+  .wordmark:hover {
+    color: var(--accent);
+  }
+  ul {
+    display: flex;
+    gap: 1.5rem;
+    list-style: none;
+  }
+  ul a {
+    color: var(--ink);
+    text-decoration: none;
+    font-size: 1rem;
+  }
+  ul a:hover {
+    color: var(--teal-deep);
+  }
+  ul a[aria-current='page'] {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.25em;
+    text-decoration-color: var(--teal-deep);
+  }
+</style>

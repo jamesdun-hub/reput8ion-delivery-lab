@@ -1,0 +1,40 @@
+---
+import { getCollection } from 'astro:content';
+import SampleTag from './SampleTag.astro';
+
+interface Props {
+  placement: string;
+}
+const { placement } = Astro.props;
+
+const all = await getCollection('endorsements');
+const match = all.filter((e) => e.data.placement === placement);
+---
+
+{
+  match.map((e) => (
+    <blockquote>
+      {e.id.startsWith('sample') && <SampleTag label="Sample endorsement. Three real ones to be sourced" />}
+      <p>{e.data.quote}</p>
+      <footer class="small">
+        {e.data.name}, {e.data.title}, {e.data.organisation}
+      </footer>
+    </blockquote>
+  ))
+}
+
+<style>
+  blockquote {
+    border-left: 2px solid var(--teal-deep);
+    padding-left: 1.25rem;
+    max-width: var(--measure);
+  }
+  blockquote p {
+    font-size: 1.25em;
+    line-height: 1.5;
+    font-style: italic;
+  }
+  blockquote footer {
+    margin-top: 0.75rem;
+  }
+</style>

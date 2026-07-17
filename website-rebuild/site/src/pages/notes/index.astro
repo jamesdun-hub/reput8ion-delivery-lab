@@ -1,0 +1,56 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+
+const notes = (await getCollection('notes'))
+  .filter((n) => !n.data.draft)
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+
+const dateFmt = new Intl.DateTimeFormat('en-IE', {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+});
+---
+
+<Base
+  title="Notes. Reput8ion Dynamics"
+  description="Published thinking on reputation, narrative, issues management and counsel under pressure."
+>
+  <h1>Notes</h1>
+  <ol class="stream">
+    {
+      notes.map((n) => (
+        <li>
+          <p class="small date">{dateFmt.format(n.data.date)}</p>
+          <a href={`/notes/${n.id}`}>{n.data.title}</a>
+          <p class="standfirst">{n.data.standfirst}</p>
+        </li>
+      ))
+    }
+  </ol>
+</Base>
+
+<style>
+  h1 {
+    margin-top: 2rem;
+  }
+  .stream {
+    list-style: none;
+    margin-top: 3rem;
+    max-width: var(--measure);
+  }
+  .stream li + li {
+    margin-top: 2.75rem;
+  }
+  .stream a {
+    font-size: 1.35em;
+    font-weight: 600;
+  }
+  .date {
+    margin-bottom: 0.2rem;
+  }
+  .standfirst {
+    margin-top: 0.3rem;
+  }
+</style>

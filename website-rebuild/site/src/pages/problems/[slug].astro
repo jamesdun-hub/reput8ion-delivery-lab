@@ -1,0 +1,69 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Frame from '../../components/Frame.astro';
+import SampleTag from '../../components/SampleTag.astro';
+import samples from '../../data/samples.json';
+
+export async function getStaticPaths() {
+  const problems = await getCollection('problems');
+  return problems.map((p) => ({ params: { slug: p.id }, props: { entry: p } }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+const isSample = samples.problems.includes(entry.id);
+const isCarriedOver = samples.carriedOver.includes(entry.id);
+const showSpeakingFrame = entry.id === 'senior-people-message';
+---
+
+<Base
+  title={`${entry.data.title}. Reput8ion Dynamics`}
+  description={entry.data.summary}
+>
+  <article>
+    {isSample && <SampleTag label="Sample entry showing shape and register. James writes the final copy" />}
+    {isCarriedOver && <SampleTag label="Carried over from the current site. James to confirm" />}
+    <h1>{entry.data.title}</h1>
+
+    {
+      showSpeakingFrame && (
+        <div class="figure">
+          <Frame
+            name="jd-speaking"
+            alt="James Dunny on a conference panel"
+            widths={[640, 960, 1262]}
+            sizes="(min-width: 800px) 720px, 100vw"
+            width={1262}
+            height={1600}
+          />
+        </div>
+      )
+    }
+
+    <div class="prose">
+      <Content />
+    </div>
+
+    <hr class="rule" />
+    <p class="prose">
+      If this is the conversation happening in your organisation, <a href="/contact">talk to us</a>.
+    </p>
+  </article>
+</Base>
+
+<style>
+  article {
+    margin-top: 2rem;
+  }
+  h1 {
+    max-width: 24ch;
+  }
+  .figure {
+    margin-block: 2.5rem;
+    max-width: 34rem;
+  }
+  .prose {
+    margin-top: 2rem;
+  }
+</style>
